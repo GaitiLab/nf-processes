@@ -1,0 +1,9 @@
+name: kb-scrna
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - pip=21.1.2
+  - python=>3.8.10
+  - kb-python
