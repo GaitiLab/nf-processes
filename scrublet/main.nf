@@ -15,18 +15,18 @@ binDir = Paths.get(workflow.projectDir.toString(), "bin/")
 
 process scrublet {
 
-        publishDir path: "${params.output_dir}/${matrix.baseName}/scrublet/", mode: "copy"
+        publishDir path: "${params.output_dir}/${sample_name}/scrublet/", mode: "copy"
 
         input: 
-            path(matrix)
+            tuple val(sample_name), path(matrix)
 
         output: 
-            path "${matrix.baseName}_scrublet_detection.csv"
+            tuple val(sample_name), path("${sample_name}_scrublet_detection.csv"), emit: detections
 
 
         script:
         """
-        python $binDir/scrublet_cell_prediction_CI.py -i ${matrix} -o ${matrix.baseName}_scrublet_detection.csv \
+        python $binDir/scrublet_cell_prediction_CI.py -i ${matrix} -o ${sample_name}_scrublet_detection.csv \
         -e ${params.expected_rate} -mu ${params.min_counts} -mc ${params.min_cells} -g ${params.gene_variability} \
         -pc ${params.princ_components} $transpose_addition
         """       
@@ -36,10 +36,11 @@ process scrublet {
 
 workflow scrublet_remove {
 
-       main:
+       main: 
 
        matrices = Channel.fromPath( params.input_pattern )
        .ifEmpty { exit 1, "Cannot find any matrices matching: ${params.input_pattern}\n" }
+       .map { file -> tuple(file.baseName, file) }
 
        scrublet(matrices)
 
