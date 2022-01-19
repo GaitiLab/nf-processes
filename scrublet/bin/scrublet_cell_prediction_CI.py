@@ -21,7 +21,7 @@ def main():
     parser.add_argument('--min_cells', '-mc', type=float, help='Minimum cell number for scrublet', default=3)
     parser.add_argument('--gene_variability', '-gv', type=float, help='Minimum gene variability for scrublet',
                         default=85)
-    parser.add_argument('--princ_components', '-pc', type=float, help='Minimum number of principal components '
+    parser.add_argument('--princ_components', '-pc', type=int, help='Minimum number of principal components '
                                                                       'for scrublet', default=30)
     parser.add_argument('--transpose', '-t', action="store_true", help='Transpose the input matrix')
 
@@ -38,7 +38,7 @@ def main():
     doublet_scores, predicted_doublets = scrub.scrub_doublets(min_counts=args.min_counts,
                                                               min_cells=args.min_cells,
                                                               min_gene_variability_pctl=args.gene_variability,
-                                                              n_prin_comps=args.princ_components)
+                                                              n_prin_comps=int(args.princ_components))
 
     sparse_to_df = pd.DataFrame.sparse.from_spmatrix(input_matrix)
     sparse_to_df["cell_index"] = np.arange(sparse_to_df.shape[0]) + 1
