@@ -45,7 +45,7 @@ process multiqc {
      """
      mkdir -p ${params.output_dir}/multiqc/
      multiqc --force --interactive \
-     --title "MultiQC_Output" \
+     --title ${params.multiqc_title} \
      --filename "multiqc_report.html" \
      ${fastqc_outputs}
      """
@@ -61,8 +61,12 @@ workflow qc_workflow {
        .ifEmpty { exit 1, "Cannot find any reads matching: ${params.input_pattern}\n" }
 
        fastqc(fastqs)
+ 
+       if ( params.multiqc ) {
 
        multiqc(fastqc.out.fastqc_outputs.collect())
+
+}      
 
 }
 
