@@ -6,6 +6,17 @@ nextflow.enable.dsl=2
 def concat_pattern_dir(dir, pattern) { dir + '/' + pattern }
 
 
+def use_introns () { 
+       if (${params.include_introns) {
+
+       introns = "--include-introns"
+       } else {
+       introns = ""
+}
+       introns
+
+}
+
 
 process cellranger_count {
 
@@ -27,7 +38,9 @@ process cellranger_count {
                    --sample=${sample_name} \
                    --expect-cells=${params.expected_cells} \
                    --localcores=8 \
-                   --localmem=64G 
+                   --localmem=64G \
+                   $introns
+                   
        """
 }
 
@@ -46,11 +59,12 @@ workflow cellranger {
                 .flatMap { tuple ->
                 tuple[0] = tuple[0].split('_S')[0]
                 }
+                .view()
 
-       cellranger_count(stripped)
+       //cellranger_count(stripped)
 
 }
-                
+               
 
 }
 
