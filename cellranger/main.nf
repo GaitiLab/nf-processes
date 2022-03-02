@@ -7,16 +7,17 @@ def concat_pattern_dir(dir, pattern) { dir + '/' + pattern }
 
 
 def use_introns () { 
-       if (${params.include_introns}) {
+       if ( params.include_introns ) {
 
-       introns = "--include-introns"
+       introns = '--include-introns'
        } else {
-       introns = ""
+       introns = ''
 }
        introns
 
-}
+} 
 
+intron_include = use_introns()
 
 process cellranger_count {
 
@@ -29,7 +30,6 @@ process cellranger_count {
        output: 
        path "${params.output_dir}/${sample_name}/outs/*", emit: count_matrices
 
-
        script: 
        """
        cellranger count --id=${sample_name} \
@@ -38,8 +38,8 @@ process cellranger_count {
                    --sample=${sample_name} \
                    --expect-cells=${params.expected_cells} \
                    --localcores=8 \
-                   --localmem=64G \
-                   $introns
+                   --localmem=64 \
+                   ${intron_include}
                    
        """
 }
@@ -59,6 +59,7 @@ workflow cellranger {
                 .flatMap { tuple ->
                 tuple[0] = tuple[0].split('_S')[0]
                 }
+                .unique()
           
        cellranger_count(stripped)
 
