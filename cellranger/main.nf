@@ -7,7 +7,7 @@ def concat_pattern_dir(dir, pattern) { dir + '/' + pattern }
 
 
 def use_introns () { 
-       if (${params.include_introns) {
+       if (${params.include_introns}) {
 
        introns = "--include-introns"
        } else {
@@ -49,7 +49,7 @@ workflow cellranger {
        main:
 
 
-       if (! params.sample_sheet ) {
+       if ( params.sample_sheet == '' ) {
 
        fastqs = Channel.fromFilePairs( concat_pattern_dir(params.input_dir,params.fastq_pattern) )
        .ifEmpty { exit 1, "Cannot find any reads matching: ${params.input_dir}\n" }
@@ -59,9 +59,8 @@ workflow cellranger {
                 .flatMap { tuple ->
                 tuple[0] = tuple[0].split('_S')[0]
                 }
-                .view()
-
-       //cellranger_count(stripped)
+          
+       cellranger_count(stripped)
 
 }
                
