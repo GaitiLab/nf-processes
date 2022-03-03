@@ -22,13 +22,14 @@ intron_include = use_introns()
 process cellranger_count {
 
 
-       publishDir path: "${params.output_dir}/${sample_name}/", mode: "copy"
+       publishDir path: "${params.output_dir}/cellranger_count/", mode: "copy"
 
        input: 
        val sample_name
     
        output: 
-       path "${params.output_dir}/${sample_name}/outs/*", emit: count_matrices
+       path "${sample_name}/*"
+       path "${sample_name}/outs/*"
 
        script: 
        """
