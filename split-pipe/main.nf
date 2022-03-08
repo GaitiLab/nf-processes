@@ -73,7 +73,7 @@ workflow {
 
      main: 
 
-      cellranger()
+      pb_splitpipe()
 
 }
 
