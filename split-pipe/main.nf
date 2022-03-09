@@ -17,8 +17,8 @@ process merge_fastqs {
 
        script: 
        """
-       cat ${params.input_dir}*R1*fastq.gz > ${sublibrary}_R1.fastq.gz
-       cat ${params.input_dir}*R2*fastq.gz > ${sublibrary}_R2.fastq.gz        
+       cat ${params.input_dir}/${sublibrary}*R1*fastq.gz > ${sublibrary}_R1.fastq.gz
+       cat ${params.input_dir}/${sublibrary}*R2*fastq.gz > ${sublibrary}_R2.fastq.gz        
        """
 }
 
@@ -30,20 +30,19 @@ process splitpipe_all {
        input: 
        path read_1
        path read_2
-       val sublibrary
 
        output: 
        path ("split_pipe/*"), emit: splitpipe_all_outputs
 
        script:
        """ 
-       split-pipe --mode ${params.mode} \
+       split-pipe --mode all \
        --kit ${params.kit} \
        --genome_dir ${params.ref} \
        --fq1 ${read_1} \
        --fq2 ${read_2} \
        --output_dir split_pipe/ \
-       --samp_list ${sample_list}
+       --samp_list ${params.sample_list}
        """
 
 }
@@ -66,7 +65,7 @@ process splitpipe_combine {
        """
        split-pipe
        --mode comb \
-       --sublib_list ${sublibrary_path_list} \
+       --sublibraries ${sublibrary_path_list} \
        --output_dir split_pipe/${sample_name}
        """
 }
@@ -79,11 +78,13 @@ workflow pb_splitpipe {
 
        if ( params.merge_fastqs ) {
 
-       samples_sublibraries = Channel.fromList(params.sublibrary) 
+       samples_sublibraries = Channel.fromList( params.sublibrary) 
        
        merge_fastqs(samples_sublibraries)
-       // splitpipe_all(params.sample_list, merge_fastqs.out.read_1_merged, merge_fastqs.out.read_2_merged)
+       splitpipe_all(merge_fastqs.out.read_1_merged, merge_fastqs.out.read_2_merged)
+       // splitpipe_combine(NEED TO INSERT HERE CHANNEL FOR SAMPLE NAMES, splitpipe_all.out.splitpipe_all_outputs.collect())
 }
+
 
 }
            
