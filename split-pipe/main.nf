@@ -12,8 +12,7 @@ process merge_fastqs {
        val sublibrary
     
        output: 
-       tuple val(sublibrary), path("${sublibrary}_R1.fastq.gz"), emit: read_1_merged
-       tuple val(sublibrary), path("${sublibrary}_R2.fastq.gz"), emit: read_2_merged
+       tuple val(sublibrary), path("${sublibrary}_R1.fastq.gz"), path("${sublibrary}_R2.fastq.gz"), emit: sublibrary_read_pairs
 
        script: 
        """
@@ -80,7 +79,7 @@ workflow pb_splitpipe {
        samples_sublibraries = Channel.fromList( params.sublibrary) 
        
        merge_fastqs(samples_sublibraries)
-       splitpipe_all(merge_fastqs.out.read_1_merged.join(merge_fastqs.out.read_2_merged))
+       splitpipe_all(merge_fastqs.out.sublibrary_read_pairs)
        // splitpipe_combine(NEED TO INSERT HERE CHANNEL FOR SAMPLE NAMES, splitpipe_all.out.splitpipe_all_outputs.collect())
 }
 
