@@ -53,17 +53,15 @@ process splitpipe_combine {
 
        input: 
        
-       val sample_name
        path sublibrary_path_list
 
        output: 
-       path("split_pipe/${sample_name}"), emit: splitpipe_combined_by_sample
+       path("combined/"), emit: splitpipe_combined_by_sample
 
 
        script: 
        """
-       split-pipe
-       --mode comb \
+       split-pipe --mode comb \
        --sublibraries ${sublibrary_path_list} \
        --output_dir combined/
        """
@@ -75,7 +73,6 @@ workflow pb_splitpipe {
 
        take: 
        sub_libraries
-       run_id
 
        main:
 
@@ -98,7 +95,7 @@ workflow pb_splitpipe {
        }
        if ( params.combine ) {
 
-       splitpipe_combine(run_id, splitpipe_all.out.splitpipe_all_dir..flatMap { n -> [ n + ' ' + '\\' ] })
+       splitpipe_combine(splitpipe_all.out.splitpipe_all_dir.collect())
 }
       
 }
@@ -110,7 +107,7 @@ workflow {
      main: 
 
      
-     pb_splitpipe(params.sublibrary, params.run_id)
+     pb_splitpipe(params.sublibrary)
 
 }
 
