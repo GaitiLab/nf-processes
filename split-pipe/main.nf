@@ -49,7 +49,7 @@ process splitpipe_all {
 
 process splitpipe_combine {
 
-       publishDir path: "${params.output_dir}/split_pipe/combined/", mode: "copy"
+       publishDir path: "${params.output_dir}/split_pipe/", mode: "copy"
 
        input: 
        
@@ -65,7 +65,7 @@ process splitpipe_combine {
        split-pipe
        --mode comb \
        --sublibraries ${sublibrary_path_list} \
-       --output_dir ${sample_name}
+       --output_dir combined/
        """
 }
 
@@ -98,7 +98,7 @@ workflow pb_splitpipe {
        }
        if ( params.combine ) {
 
-       splitpipe_combine(run_id, splitpipe_all.out.splitpipe_all_dir.collect())
+       splitpipe_combine(run_id, splitpipe_all.out.splitpipe_all_dir..flatMap { n -> [ n + ' ' + '\\' ] })
 }
       
 }
