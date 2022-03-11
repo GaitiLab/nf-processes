@@ -1,4 +1,8 @@
 # Byte-compiled / optimized / DLL files
+
+.nextflow/history
+.nextflow.log*
+.nextflow/cache/
 __pycache__/
 *.py[cod]
 *$py.class
