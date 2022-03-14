@@ -91,6 +91,7 @@ workflow pb_splitpipe {
        splitpipe_all(merge_fastqs.out.sublibrary_read_pairs)
  
        } else {
+       samples_sublibraries = Channel.fromFilePairs( sub_libraries, flat: true )
        splitpipe_all(samples_sublibraries)
        }
        if ( params.combine ) {
