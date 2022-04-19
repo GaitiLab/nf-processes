@@ -14,17 +14,18 @@ process epianeuFinder {
 
        input: 
        tuple val(sample_name), path(input_fragments)
-    
+       each min_fragment_number    
+
        output: 
-       tuple val(sample_name), path("${sample_name}/"), emit: epianeufinder_dir
-       tuple val(sample_name), path("${sample_name}/results_table.tsv"), emit: epianeuFinder_results
+       tuple val(sample_name), path("${sample_name}_${min_fragment_number}/"), emit: epianeufinder_dir
+       tuple val(sample_name), path("${sample_name}_${min_fragment_number}/results_table.tsv"), emit: epianeuFinder_results
 
        script: 
        """
        Rscript $binDir/run_epianeuFinder_HPC.R -i ${input_fragments} \
-       -o ${sample_name}/ \
+       -o ${sample_name}_${min_fragment_number}/ \
        -b ${params.blacklist} \
-       -m ${params.minfrags} \
+       -m ${min_fragment_number} \
        -g ${params.ref_genome} \
        -w ${params.window} \
        -n ${params.numcores} \
@@ -39,13 +40,14 @@ workflow run_epianeuFinder_HPC {
        fragment_paths = Channel.fromPath( params.input_fragments )
        .ifEmpty { exit 1, "Cannot find any matrices matching: ${params.input_pattern}\n" }
        .splitCsv(header:true)
-       .map{ row-> tuple(row.sample_name, file(row.input_fragments)) }
+       .map{ row-> tuple(row.sample_name, file(row.input_fragments)) }       
 
-       epianeuFinder(fragment_paths)
+       possible_min_frags = Channel.fromList( params.minfrags )       
+
+       epianeuFinder(fragment_paths, possible_min_frags)
 
 
 }
-
 
 workflow {
 
