@@ -86,22 +86,22 @@ combine = true
 }
 ```
 
-input_dir: The absolute path of the input directory where the raw FASTQ files are held. \
-output_dir: The absolute path of the output directory where the results are to be written. \
-merge_fastqs: Setting to false will not concatenate the fastq files, and each pair of fastq files in the input directory will be treated as a sub-library. Default is TRUE. \
-ref: The absolute path to a suitable reference genome. \
-sample_list: The absolute path to a list of samples as shown above. \
-kit: The type of kit used by ParseBio. This will correspond to the number of samples processed. The options currently available are WT_mini, WT, or WT_mega. \
-mode: Unless custom analysis is required, the mode should always be set to 'all'. \ 
-sublibrary: The absolute path to a list of sub library names as shown above. \
-combine: Whether or not the results should be combined by sub library. Default is TRUE. Setting to FALSE will keep all samples across different sub-libraries are separate outputs (NOT RECOMMENDED). 
+***input_dir***: The absolute path of the input directory where the raw FASTQ files are held. \
+***output_dir***: The absolute path of the output directory where the results are to be written. \
+***merge_fastqs***: Setting to false will not concatenate the fastq files, and each pair of fastq files in the input directory will be treated as a sub-library. Default is TRUE. \
+***ref***: The absolute path to a suitable reference genome. \
+***sample_list***: The absolute path to a list of samples as shown above. \
+***kit***: The type of kit used by ParseBio. This will correspond to the number of samples processed. The options currently available are WT_mini, WT, or WT_mega. \
+***mode***: Unless custom analysis is required, the mode should always be set to 'all'. \ 
+***sublibrary***: The absolute path to a list of sub library names as shown above. \
+***combine***: Whether or not the results should be combined by sub library. Default is TRUE. Setting to FALSE will keep all samples across different sub-libraries are separate outputs (NOT RECOMMENDED). 
 
 ## Profiles 
 
 Nextflow supports the use of profiles for resource allocation configuration. Currently, splitpipe with Nextflow supports two profiles: \
 
-*local: Recommended only for local analysis (not on a HPC cluster). This specifies 128G of memory across 8 cpus (recommended minimum requirements for splitpipe). 
-*slurm_h4h: The recommended profile for use on the UHN H4H cluster. This profile directly allows Nextflow to parallelize each process as a Slurm batch job using a veryhighmem partition with 8 cpus and 128GB of memory (time limit of 24H). 
+***local***: Recommended only for local analysis (not on a HPC cluster). This specifies 128G of memory across 8 cpus (recommended minimum requirements for splitpipe). \
+***slurm_h4h***: The recommended profile for use on the UHN H4H cluster. This profile directly allows Nextflow to parallelize each process as a Slurm batch job using a veryhighmem partition with 8 cpus and 128GB of memory (time limit of 24H). 
 
 Profiles can be specified using ```-profile profile_of_choice``` at execution. 
 
@@ -113,7 +113,7 @@ The configuration variables above can either be modified directly in the nextflo
 ```
 module load ParseBiosciences/0.9.6p
 
-./nextflow run scRNA-utils/split-pipe/ --input_dir /cluster/projects/gaitigroup/ParseBio_data/fastq/ \
+./nextflow run scRNA-utils/modules/split-pipe/ --input_dir /cluster/projects/gaitigroup/ParseBio_data/fastq/ \
 --output_dir /cluster/projects/gaitigroup/ParseBio_data/human_mouse \
 --sample_list /cluster/projects/gaitigroup/ParseBio_data/test_HH/nextflow_test_pb_human/sample_list_human_mouse.txt \
 --ref /cluster/tools/data/commondata/parsebio/genomes/hg38_mm10/ \
@@ -121,6 +121,12 @@ module load ParseBiosciences/0.9.6p
 --sublibrary /cluster/projects/gaitigroup/ParseBio_data/test_HH/nextflow_test_pb_human/sublibrary.txt \
 -profile slurm_h4h
 ```
+
+Each input parameter can be specified using ```--parameter```. Note that profiles must be only one ```-```. 
+
+## Outputs
+
+
 
 
 
