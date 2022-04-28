@@ -126,6 +126,65 @@ Each input parameter can be specified using ```--parameter```. Note that profile
 
 ## Outputs
 
+The basic structure of the output directory will be as follows: 
+
+```
+└── split_pipe
+    ├── all
+    ├── combined
+    └── merged_fastqs
+
+```
+
+```
+└── split_pipe
+    ├── all
+    │   ├── Sub-library_1
+    ├── combined
+    │   ├── all-well
+    │   │   ├── DGE_filtered
+    │   │   │   ├── all_genes.csv
+    │   │   │   ├── cell_metadata.csv
+    │   │   │   └── DGE.mtx
+    │   │   ├── figures
+    │   │   │   ├── fig_cell_by_rnd1_well.png
+    │   │   │   ├── fig_cell_by_rnd2_well.png
+    │   │   │   ├── fig_cell_by_rnd3_well.png
+    │   │   │   ├── fig_ss_gene_per_cell.png
+    │   │   │   ├── fig_ss_tscp_per_cell.png
+    │   │   │   ├── fig_tscp_by_rnd1_well.png
+    │   │   │   ├── fig_tscp_by_rnd2_well.png
+    │   │   │   ├── fig_tscp_by_rnd3_well.png
+    │   │   │   ├── fig_tscp_cell_cutoff.png
+    │   │   │   ├── fig_umap_cluster.png
+    │   │   │   └── fig_umap_sample.png
+    │   │   └── report
+    │   │       ├── analysis_proc_def.csv
+    │   │       ├── cell_counts_by_rnd1_well.csv
+    │   │       ├── cell_counts_by_rnd2_well.csv
+    │   │       ├── cell_counts_by_rnd3_well.csv
+    │   │       ├── cluster_assignment.csv
+    │   │       ├── cluster_diff_exp.csv
+    │   │       ├── cluster_umap.csv
+    │   │       ├── expressed_genes.csv
+    │   │       ├── gene_counts_subsampled.csv
+    │   │       ├── sample_def.csv
+    │   │       ├── sample_mrtg_counts.csv
+    │   │       ├── species_tscp_counts.csv
+    │   │       ├── tscp_counts.csv
+    │   │       ├── tscp_counts_subsampled.csv
+    │   │       ├── tscp_cutoff_calc.csv
+    │   │       ├── tscp_median_by_rnd1_well.csv
+    │   │       ├── tscp_median_by_rnd2_well.csv
+    │   │       └── tscp_median_by_rnd3_well.csv
+    └── merged_fastqs
+        ├── Parse-5K-1_R1.fastq.gz -> /cluster/projects/gaitigroup/ParseBio_data/test_HH/nextflow_test_pb_human/work/72/1d61dd4c02b8271c8b15fee1d82e82/Parse-5K-1_R1.fastq.gz
+        ├── Parse-5K-1_R2.fastq.gz -> /cluster/projects/gaitigroup/ParseBio_data/test_HH/nextflow_test_pb_human/work/72/1d61dd4c02b8271c8b15fee1d82e82/Parse-5K-1_R2.fastq.gz
+        ├── Parse-5K-2_R1.fastq.gz -> /cluster/projects/gaitigroup/ParseBio_data/test_HH/nextflow_test_pb_human/work/65/073de1fd54204ec6ae47f55a54b818/Parse-5K-2_R1.fastq.gz
+        └── Parse-5K-2_R2.fastq.gz -> /cluster/projects/gaitigroup/ParseBio_data/test_HH/nextflow_test_pb_human/work/65/073de1fd54204ec6ae47f55a54b818/Parse-5K-2_R2.fastq.gz
+
+
+```
 
 
 
