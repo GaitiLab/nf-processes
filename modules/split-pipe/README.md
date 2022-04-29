@@ -4,7 +4,7 @@ This module allows for the parallelization of the split-pipe scRNA processing pi
 
 ## Installation
 
-Installation requires the use of Nextflow, a workflow description language (WDL) that enables reproducible parallelization of common bioinformatics tasks. 
+Installation requires the use of Nextflow, a workflow description language (WDL) that enables reproducible parallelization of common bioinformatics tasks. Nextflow provides an executable that requires both [Groovy](https://groovy-lang.org/) and [Java/JDK](https://www.oracle.com/java/technologies/downloads/). Installation of the portable executable is as follows:
 
 ```
 wget -qO- https://get.nextflow.io | bash
@@ -42,12 +42,17 @@ sample_2 A4-A6
 
 Ensure that there is only one space between the sample name and its corresponding well(s). 
 
-The pipeline allows requires a .txt list of the sub-library names. These names should correspond to the fastq file names generated from the sequencing run. A suitable input would be as follows: 
+The pipeline also requires a list of sub-library names. These names should correspond to the fastq file names generated from the sequencing run. A suitable input would be as follows in the form of a .txt file: 
 
 ```
 Sublibrary-1
 Sublibrary-2
 ```
+Alternatively, the user may modify the ```nextflow.config``` file and pass the sub-library names as a Groovy-compatible list of strings: 
+
+```sublibrary = ['Sublibrary-1', 'Sublibrary-2']```
+
+However this method is not recommended. \
 
 Ensure that each sub library name is on its own line in the .txt file input. 
 
@@ -98,7 +103,7 @@ combine = true
 
 ## Profiles 
 
-Nextflow supports the use of profiles for resource allocation configuration. Currently, splitpipe with Nextflow supports two profiles: \
+Nextflow supports the use of profiles for resource allocation configuration. Currently, splitpipe with Nextflow supports two profiles: 
 
 ***local***: Recommended only for local analysis (not on a HPC cluster). This specifies 128G of memory across 8 cpus (recommended minimum requirements for splitpipe). \
 ***slurm_h4h***: The recommended profile for use on the UHN H4H cluster. This profile directly allows Nextflow to parallelize each process as a Slurm batch job using a veryhighmem partition with 8 cpus and 128GB of memory (time limit of 24H). 
@@ -133,13 +138,11 @@ The basic structure of the output directory will be as follows, with a directory
     ├── all
     ├── combined
     └── merged_fastqs
+```
 
-``
-
-merged_fastqs with contain symlinks to the merged FASTQ files concatenated by sub-library, if the user has enabled merging of FASTQ files. \
-all will contain the splitpipe output for each individual sub-library. These outputs are the outputs corresponding to running ```splitpipe --mode all``` for a set of sub-libraries. \
-
-combined will contain the spitpipe outputs for all samples combined by sub-library. These outputs correspond to the outputs from running ```splitpipe --mode comb```.
+***merged_fastqs*** with contain symlinks to the merged FASTQ files concatenated by sub-library, if the user has enabled merging of FASTQ files. \
+***all*** will contain the splitpipe output for each individual sub-library. These outputs are the outputs corresponding to running ```splitpipe --mode all``` for a set of sub-libraries. \
+***combined*** will contain the spitpipe outputs for all samples combined by sub-library. These outputs correspond to the outputs from running ```splitpipe --mode comb```.
 
 
 
