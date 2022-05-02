@@ -43,7 +43,7 @@ process splitpipe_all {
        """ 
        split-pipe --mode all \
        --kit ${kit} \
-       --genome_dir ${ref} \
+       --genome_dir ${reference} \
        --fq1 ${read_1} \
        --fq2 ${read_2} \
        --output_dir ${sublibrary}/ \
@@ -79,14 +79,14 @@ process splitpipe_combine {
 workflow pb_splitpipe {
 
        take: 
-       input_dir,
-       output_dir,
-       merge_fastqs,
-       reference,
-       sample_list,
-       kit,
-       mode,
-       sub_libraries,
+       input_dir
+       output_dir
+       merge_fastqs
+       reference
+       sample_list
+       kit
+       mode
+       sub_libraries
        combine
 
        main:
@@ -111,7 +111,7 @@ workflow pb_splitpipe {
        }
        if ( combine ) {
 
-       splitpipe_combine(splitpipe_all.out.splitpipe_all_dir.collect())
+       splitpipe_combine(splitpipe_all.out.splitpipe_all_dir.collect(), output_dir)
 }
       
 }
@@ -124,7 +124,7 @@ workflow {
 
      
      pb_splitpipe(params.input_dir, params.output_dir,
-     params.merge_fastqs, params.ref, params.kit,
+     params.merge_fastqs, params.ref, params.sample_list, params.kit,
      params.mode, params.sublibrary, params.combine)
 
 }
