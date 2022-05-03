@@ -42,7 +42,16 @@ sample_2 A4-A6
 
 Ensure that there is only one space between the sample name and its corresponding well(s). 
 
-The pipeline also requires a list of sub-library names. These names should correspond to the fastq file names generated from the sequencing run. A suitable input would be as follows in the form of a .txt file: 
+
+### Specifying sub-library inputs
+
+The pipeline requires the detection of the sub-libraries corresponding to the FASTQ files for the raw data. There are two methods for providing sub-library information to the pipeline: 
+
+#### Option 1: Sub-library list and FASTQ merging
+
+If the user wishes to concatenate multiple FASTQ lanes OF THE SAME SUB-LIBRARY prior to running splitpipe, then the following input formats will apply: \
+
+* A list of sub-library names contained within an input directory. These names should correspond to the FASTQ file names generated from the sequencing run. A suitable input would be as follows in the form of a .txt file: 
 
 ```
 Sublibrary-1
@@ -72,6 +81,10 @@ Sublibrary-2_R1_001.fastq.gz       Sublibrary-2_R2_001.fastq.gz
 ```
 Note that the module will also concatenate the fastq files for you if you provide a list of the sub libraries as shown above. 
 
+#### Option 2: No FASTQ merging
+
+Alternatively, if the user does not wish to concatenate the FASTQ files prior to running splitpipe, the pipeline will detect the FASTQ pairs from the input directory and a FASTQ pattern. Please look at ```params.fastq_pattern``` in the ```nextflow.config``` file for an example of a Nextflow-compatible glob pattern that will identify pairs of FASTQ files for input. 
+
 ## Configuration
 
 The following input variables can be used with the splitpipe Nextflow module: 
@@ -88,6 +101,7 @@ kit = 'WT'
 mode = 'all'
 sublibrary = ''
 combine = true
+fastq_pattern = '*_R{1,1}*.fastq.gz'
 }
 ```
 
@@ -98,8 +112,9 @@ combine = true
 ***sample_list***: The absolute path to a list of samples as shown above. \
 ***kit***: The type of kit used by ParseBio. This will correspond to the number of samples processed. The options currently available are WT_mini, WT, or WT_mega. \
 ***mode***: Unless custom analysis is required, the mode should always be set to 'all'. \ 
-***sublibrary***: The absolute path to a list of sub library names as shown above. \
-***combine***: Whether or not the results should be combined by sub library. Default is TRUE. Setting to FALSE will keep all samples across different sub-libraries are separate outputs (NOT RECOMMENDED). 
+***sublibrary***: The absolute path to a list of sub library names as shown above. ONLY requires if merging fastqs from a specific input directory. \
+***combine***: Whether or not the results should be combined by sub library. Default is TRUE. Setting to FALSE will keep all samples across different sub-libraries are separate outputs (NOT RECOMMENDED). \
+***fastq_pattern***: A glob pattern that is combined with the input directory to detect pairs of FASTQ files for input. Only used if merge_fastqs is set to False.  
 
 ## Profiles 
 
