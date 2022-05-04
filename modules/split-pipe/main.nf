@@ -31,7 +31,7 @@ process splitpipe_all {
        input: 
        tuple val(sublibrary), path(read_1), path(read_2)
        val kit
-       path reference
+       val reference
        path sample_list
        path output_dir
 
@@ -88,26 +88,29 @@ workflow pb_splitpipe {
        mode
        sub_libraries
        combine
+       fastq_pattern
 
        main:
+       
+       if ( merge_fastqs ) {
 
-       if ( sub_libraries instanceof List ) {
+        if ( sub_libraries instanceof List ) {
        samples_sublibraries = Channel.fromList(sub_libraries)
        } else if ( sub_libraries.contains('.txt') & sub_libraries instanceof String) {
        samples_sublibraries = Channel.fromList(file(sub_libraries).readLines())
        } else {
-       println("sublibraries must be either a Groovy list of strings of a .txt file with one sublibrary per line.")
+       println("If merging FASTQs, sublibraries must be either a list of strings of a .txt file with one sublibrary per line.")
        System.exit(1)
        }
        
-       if ( merge_fastqs ) {
-       
-       merge_fastqs(input_dir, output_dir, samples_sublibraries)
-       splitpipe_all(merge_fastqs.out.sublibrary_read_pairs, params.kit, params.ref, params.sample_list, params.output_dir)
+       merge_fastqs(samples_sublibraries)
+       splitpipe_all(input_dir, output_dir, merge_fastqs.out.sublibrary_read_pairs)
  
        } else {
-       samples_sublibraries = Channel.fromFilePairs( sub_libraries, flat: true )
-       splitpipe_all(samples_sublibraries, params.kit, params.ref, params.sample_list, params.output_dir)
+       println("Not merging FASTQ files. Detecting sublibrary file pairs using the input directory and FASTQ pattern.")
+       samples_sublibraries = Channel.fromFilePairs( input_dir + '/' + fastq_pattern, flat: true )
+       splitpipe_all(input_dir, output_dir, samples_sublibraries)
+
        }
        if ( combine ) {
 
@@ -122,10 +125,9 @@ workflow {
 
      main: 
 
-     
      pb_splitpipe(params.input_dir, params.output_dir,
      params.merge_fastqs, params.ref, params.sample_list, params.kit,
-     params.mode, params.sublibrary, params.combine)
+     params.mode, params.sublibrary, params.combine, params.fastq_pattern)
 
 }
 
