@@ -22,7 +22,6 @@ The pipeline requires installation of split-pipe, provided through Parse Bioscie
 module load ParseBiosciences/0.9.6p
 ```
 
-
 ## Pipeline installation & Updating
 
 ```
@@ -39,8 +38,9 @@ split-pipe operates on the basis of sub-libraries, which are replicates of sampl
 sample_1 A1-A3
 sample_2 A4-A6
 ```
+**Important**: The user should be careful to correcly specify the sample names and the proper wells that correspond to the wet lab experiment for the ParseBio samples. Failure to do so will results in incorrect pipeline outputs. \
 
-Ensure that there is only one space between the sample name and its corresponding well(s). 
+Ensure that there is only one space between the sample name and its corresponding well(s), and that each combination of sample name and well assignment takes its own line. 
 
 
 ### Specifying sub-library inputs
@@ -49,7 +49,7 @@ The pipeline requires the detection of the sub-libraries corresponding to the FA
 
 #### Option 1: Sub-library list and FASTQ merging
 
-If the user wishes to concatenate multiple FASTQ lanes OF THE SAME SUB-LIBRARY prior to running splitpipe, then the following input formats will apply: \
+If the user wishes to concatenate multiple FASTQ lanes OF THE SAME SUB-LIBRARY prior to running split-pipe, then the following input formats will apply: \
 
 * A list of sub-library names contained within an input directory. These names should correspond to the FASTQ file names generated from the sequencing run. A suitable input would be as follows in the form of a .txt file: 
 
@@ -65,25 +65,32 @@ However this method is not recommended. \
 
 Ensure that each sub library name is on its own line in the .txt file input. 
 
-**IMPORTANT**: it is absolutely critical that sub-libraries **ARE NOT** concatenated together. Individual sub-libraries as they were prepared must be kept as distinct fastq files to ensure that the combinatorial barcoding is maintained. However, it **IS APPROPRIATE** to concatenate fastq files from the same sub-library across multiple lanes. For example, with the following fastq input files using paired end sequencing: 
+**IMPORTANT**: it is absolutely critical that sub-libraries **ARE NOT** concatenated together. Individual sub-libraries as they were prepared must be kept as distinct fastq files to ensure that the combinatorial barcoding is maintained. However, it **IS REQUIRES** to concatenate fastq files from the same sub-library across multiple lanes. For example, with the following fastq input files using paired end sequencing: 
 
 ```
 Sublibrary-1_S1_L001_R2_001.fastq.gz  Sublibrary-1_S1_L002_R2_001.fastq.gz  Sublibrary-2_S2_L001_R2_001.fastq.gz  Sublibrary-2_S2_L002_R2_001.fastq.gz
 Sublibrary-1_S1_L001_R1_001.fastq.gz  Sublibrary-1_S1_L002_R1_001.fastq.gz  Sublibrary-2_S2_L001_R1_001.fastq.gz  Sublibrary-2_S2_L002_R1_001.fastq.gz
 ```
 
-An appropriate concatenation would produce the following paired fastq files: 
-
+Proper concatenation would produce the following paired fastq files: 
 
 ```
 Sublibrary-1_R1_001.fastq.gz       Sublibrary-1_R2_001.fastq.gz
 Sublibrary-2_R1_001.fastq.gz       Sublibrary-2_R2_001.fastq.gz
 ```
+
+In the example above, the individual FASTQ files for each sub-library and lane SHOULD NOT be treated as individual sub-libraries. For proper results, all lanes corresponding to one sub-library should be collapsed prior to running ```splitpipe --mode all```. \
+
 Note that the module will also concatenate the fastq files for you if you provide a list of the sub libraries as shown above. 
 
 #### Option 2: No FASTQ merging
 
-Alternatively, if the user does not wish to concatenate the FASTQ files prior to running splitpipe, the pipeline will detect the FASTQ pairs from the input directory and a FASTQ pattern. Please look at ```params.fastq_pattern``` in the ```nextflow.config``` file for an example of a Nextflow-compatible glob pattern that will identify pairs of FASTQ files for input. 
+Alternatively, if the user does not wish to concatenate the FASTQ files prior to running splitpipe, the pipeline will detect the FASTQ pairs from the input directory and a FASTQ pattern. Please look at ```params.fastq_pattern``` in the ```nextflow.config``` file for an example of a Nextflow-compatible glob pattern that will identify pairs of FASTQ files for input. \
+
+**IMPORTANT**: This mode should be used only if: 
+
+* The FASTQ files have already been concatenated prior to running this module
+* Only one lane per sublibrary was sequenced. If more than one lane is sequenced, then concatenattion must be conducted (see above). 
 
 ## Configuration
 
@@ -101,20 +108,20 @@ kit = 'WT'
 mode = 'all'
 sublibrary = ''
 combine = true
-fastq_pattern = '*_R{1,1}*.fastq.gz'
+fastq_pattern = '*_R{1,2}*.fastq.gz'
 }
 ```
 
-***input_dir***: The absolute path of the input directory where the raw FASTQ files are held. \
-***output_dir***: The absolute path of the output directory where the results are to be written. \
-***merge_fastqs***: Setting to false will not concatenate the fastq files, and each pair of fastq files in the input directory will be treated as a sub-library. Default is TRUE. \
+***input_dir***: The absolute path of the input directory where the raw FASTQ files are held. All FASTQ files should be contained in this directory, and not within any sub-directories. \
+***output_dir***: The absolute path of the output directory where the results are to be written. The module will create the output directory if it does not exist. \
+***merge_fastqs***: Setting to false will not concatenate the fastq files, and each pair of fastq files in the input directory will be treated as a sub-library. Default is TRUE. ONly to be used if the FASTQ files were merged previously, or if only one lane per sublibrary was sequenced. \
 ***ref***: The absolute path to a suitable reference genome. \
 ***sample_list***: The absolute path to a list of samples as shown above. \
 ***kit***: The type of kit used by ParseBio. This will correspond to the number of samples processed. The options currently available are WT_mini, WT, or WT_mega. \
 ***mode***: Unless custom analysis is required, the mode should always be set to 'all'. \ 
 ***sublibrary***: The absolute path to a list of sub library names as shown above. ONLY requires if merging fastqs from a specific input directory. \
 ***combine***: Whether or not the results should be combined by sub library. Default is TRUE. Setting to FALSE will keep all samples across different sub-libraries are separate outputs (NOT RECOMMENDED). \
-***fastq_pattern***: A glob pattern that is combined with the input directory to detect pairs of FASTQ files for input. Only used if merge_fastqs is set to False.  
+***fastq_pattern***: A glob pattern that is combined with the input directory to detect pairs of FASTQ files for input. Only used if merge_fastqs is set to false.  
 
 ## Profiles 
 
