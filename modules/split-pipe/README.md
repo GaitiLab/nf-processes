@@ -38,7 +38,7 @@ split-pipe operates on the basis of sub-libraries, which are replicates of sampl
 sample_1 A1-A3
 sample_2 A4-A6
 ```
-**Important**: The user should be careful to correcly specify the sample names and the proper wells that correspond to the wet lab experiment for the ParseBio samples. Failure to do so will results in incorrect pipeline outputs. \
+**Important**: The user should be careful to correcly specify the sample names and the proper wells that correspond to the wet lab experiment for the ParseBio samples. Failure to do so will results in incorrect pipeline outputs.
 
 Ensure that there is only one space between the sample name and its corresponding well(s), and that each combination of sample name and well assignment takes its own line. 
 
@@ -49,7 +49,7 @@ The pipeline requires the detection of the sub-libraries corresponding to the FA
 
 #### Option 1: Sub-library list and FASTQ merging
 
-If the user wishes to concatenate multiple FASTQ lanes OF THE SAME SUB-LIBRARY prior to running split-pipe, then the following input formats will apply: \
+If the user wishes to concatenate multiple FASTQ lanes **OF THE SAME SUB-LIBRARY** prior to running split-pipe, then the following input formats will apply:
 
 * A list of sub-library names contained within an input directory. These names should correspond to the FASTQ file names generated from the sequencing run. A suitable input would be as follows in the form of a .txt file: 
 
@@ -57,35 +57,38 @@ If the user wishes to concatenate multiple FASTQ lanes OF THE SAME SUB-LIBRARY p
 Sublibrary-1
 Sublibrary-2
 ```
+
 Alternatively, the user may modify the ```nextflow.config``` file and pass the sub-library names as a Groovy-compatible list of strings: 
 
 ```sublibrary = ['Sublibrary-1', 'Sublibrary-2']```
 
-However this method is not recommended. \
+However this method is not recommended for reproducibility.
 
 Ensure that each sub library name is on its own line in the .txt file input. 
 
-**IMPORTANT**: it is absolutely critical that sub-libraries **ARE NOT** concatenated together. Individual sub-libraries as they were prepared must be kept as distinct fastq files to ensure that the combinatorial barcoding is maintained. However, it **IS REQUIRES** to concatenate fastq files from the same sub-library across multiple lanes. For example, with the following fastq input files using paired end sequencing: 
+**IMPORTANT**: It is ***absolutely critical*** that distinct sub-libraries **ARE NOT** concatenated together. Individual sub-libraries as they were prepared must be kept as distinct FASTQ files to ensure that the combinatorial barcoding is maintained. However, it **IS REQUIRED** to concatenate FASTQ files from the same sub-library that were sequenced across multiple lanes. For example, with the following FASTQ input files using paired end sequencing: 
 
 ```
 Sublibrary-1_S1_L001_R2_001.fastq.gz  Sublibrary-1_S1_L002_R2_001.fastq.gz  Sublibrary-2_S2_L001_R2_001.fastq.gz  Sublibrary-2_S2_L002_R2_001.fastq.gz
 Sublibrary-1_S1_L001_R1_001.fastq.gz  Sublibrary-1_S1_L002_R1_001.fastq.gz  Sublibrary-2_S2_L001_R1_001.fastq.gz  Sublibrary-2_S2_L002_R1_001.fastq.gz
 ```
 
-Proper concatenation would produce the following paired fastq files: 
+Proper concatenation would produce the following paired FASTQ files: 
 
 ```
 Sublibrary-1_R1_001.fastq.gz       Sublibrary-1_R2_001.fastq.gz
 Sublibrary-2_R1_001.fastq.gz       Sublibrary-2_R2_001.fastq.gz
 ```
 
-In the example above, the individual FASTQ files for each sub-library and lane SHOULD NOT be treated as individual sub-libraries. For proper results, all lanes corresponding to one sub-library should be collapsed prior to running ```splitpipe --mode all```. \
+Where each Read 1 or 2 across 4 lanes is collapsed into one FASTQ file.
 
-Note that the module will also concatenate the fastq files for you if you provide a list of the sub libraries as shown above. 
+In the example above, the individual FASTQ files for each sub-library and lane SHOULD NOT be treated as individual sub-libraries. For proper results, all lanes corresponding to one sub-library should be collapsed prior to running ```splitpipe --mode all```.
+
+Note that this module will also concatenate the fastq files for you if you provide a list of the sub libraries as shown above (see above). 
 
 #### Option 2: No FASTQ merging
 
-Alternatively, if the user does not wish to concatenate the FASTQ files prior to running splitpipe, the pipeline will detect the FASTQ pairs from the input directory and a FASTQ pattern. Please look at ```params.fastq_pattern``` in the ```nextflow.config``` file for an example of a Nextflow-compatible glob pattern that will identify pairs of FASTQ files for input. \
+Alternatively, if the user does not wish to concatenate the FASTQ files prior to running splitpipe, the pipeline will detect the FASTQ pairs from the input directory and a FASTQ pattern. Please look at ```params.fastq_pattern``` in the ```nextflow.config``` file for an example of a Nextflow-compatible glob pattern that will identify pairs of FASTQ files for input.
 
 **IMPORTANT**: This mode should be used only if: 
 
@@ -94,7 +97,7 @@ Alternatively, if the user does not wish to concatenate the FASTQ files prior to
 
 ## Configuration
 
-The following input variables can be used with the splitpipe Nextflow module: 
+The following input variables can be used with the splitpipe Nextflow module. Default values are set that can be changed at runtime: 
 
 ```
 params {
@@ -109,12 +112,13 @@ mode = 'all'
 sublibrary = ''
 combine = true
 fastq_pattern = '*_R{1,2}*.fastq.gz'
+
 }
 ```
 
 ***input_dir***: The absolute path of the input directory where the raw FASTQ files are held. All FASTQ files should be contained in this directory, and not within any sub-directories. \
 ***output_dir***: The absolute path of the output directory where the results are to be written. The module will create the output directory if it does not exist. \
-***merge_fastqs***: Setting to false will not concatenate the fastq files, and each pair of fastq files in the input directory will be treated as a sub-library. Default is TRUE. ONly to be used if the FASTQ files were merged previously, or if only one lane per sublibrary was sequenced. \
+***merge_fastqs***: Setting to false will not concatenate the fastq files, and each pair of fastq files in the input directory will be treated as a sub-library. Default is TRUE. **Only to be used** if the FASTQ files were merged previously, or if only one lane per sublibrary was sequenced. \
 ***ref***: The absolute path to a suitable reference genome. \
 ***sample_list***: The absolute path to a list of samples as shown above. \
 ***kit***: The type of kit used by ParseBio. This will correspond to the number of samples processed. The options currently available are WT_mini, WT, or WT_mega. \
@@ -127,14 +131,14 @@ fastq_pattern = '*_R{1,2}*.fastq.gz'
 
 Nextflow supports the use of profiles for resource allocation configuration. Currently, splitpipe with Nextflow supports two profiles: 
 
-***local***: Recommended only for local analysis (not on a HPC cluster). This specifies 128G of memory across 8 cpus (recommended minimum requirements for splitpipe). \
+***local***: Recommended only for local analysis (not on a HPC cluster). This specifies 128G of memory across 8 cpus, which are the recommended minimum requirements for splitpipe. \
 ***slurm_h4h***: The recommended profile for use on the UHN H4H cluster. This profile directly allows Nextflow to parallelize each process as a Slurm batch job using a veryhighmem partition with 8 cpus and 128GB of memory (time limit of 24H). 
 
-Profiles can be specified using ```-profile profile_of_choice``` at execution. 
+Profiles can be specified using ```-profile profile_of_choice``` at execution. Note that multiple configuration profiles can be used at once.
 
 ## Running the pipeline
 
-The configuration variables above can either be modified directly in the nextflow.config file (NOT RECOMMENDED unless variables are to be used repeatedly), or as command line options at runtime. An example of execution would be as follows: 
+The configuration variables above can either be modified directly in the nextflow.config file (this method is **NOT RECOMMENDED** unless variables are to be used repeatedly), or as command line options at runtime. An example of execution would be as follows: 
 
 
 ```
