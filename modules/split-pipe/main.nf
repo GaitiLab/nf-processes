@@ -78,17 +78,8 @@ process splitpipe_combine {
 
 workflow pb_splitpipe {
 
-       take: 
-       input_dir
-       output_dir
-       merge_fastqs
-       reference
-       sample_list
-       kit
-       mode
+       take:
        sub_libraries
-       combine
-       fastq_pattern
 
        main:
        
@@ -103,18 +94,18 @@ workflow pb_splitpipe {
        System.exit(1)
        }
        
-       merge_fastqs(samples_sublibraries)
-       splitpipe_all(input_dir, output_dir, merge_fastqs.out.sublibrary_read_pairs)
+       merge_fastqs(params.input_dir, params.output_dir, samples_sublibraries)
+       splitpipe_all(merge_fastqs.out.sublibrary_read_pairs, params.kit, params.ref, params.sample_list, params.output_dir)
  
        } else {
        println("Not merging FASTQ files. Detecting sublibrary file pairs using the input directory and FASTQ pattern.")
        samples_sublibraries = Channel.fromFilePairs( input_dir + '/' + fastq_pattern, flat: true )
-       splitpipe_all(input_dir, output_dir, samples_sublibraries)
+       splitpipe_all(samples_sublibraries, params.kit, params.ref, params.sample_list, params.output_dir)
 
        }
        if ( combine ) {
 
-       splitpipe_combine(splitpipe_all.out.splitpipe_all_dir.collect(), output_dir)
+       splitpipe_combine(splitpipe_all.out.splitpipe_all_dir.collect(), params.output_dir)
 }
       
 }
@@ -125,9 +116,7 @@ workflow {
 
      main: 
 
-     pb_splitpipe(params.input_dir, params.output_dir,
-     params.merge_fastqs, params.ref, params.sample_list, params.kit,
-     params.mode, params.sublibrary, params.combine, params.fastq_pattern)
+     pb_splitpipe(params.sublibrary)
 
 }
 
