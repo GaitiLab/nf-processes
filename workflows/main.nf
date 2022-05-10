@@ -60,7 +60,7 @@ workflow splitpipe_pb {
        
        sample_names = Channel.fromList(file(params.sample_list).readLines()).map { i -> spaceSplit(i)[0] }
 
-       comb_out_dir = splitpipe_combine.out.splitpipe_combined_by_samplesplitpipe_combined_by_sample
+       comb_out_dir = splitpipe_combine.out.splitpipe_combined_by_sample
 
        // create a channel with sample name and the path of the combined output matrix 
 
