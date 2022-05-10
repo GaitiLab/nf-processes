@@ -5,11 +5,11 @@ nextflow.enable.dsl=2
 import java.nio.file.Paths
 
 
-include { fastqc; multiqc } from "../modules/fastqc_multiqc/main.nf"
+include { fastqc; multiqc; } from "../modules/fastqc_multiqc/main.nf"
 
-include { pb_splitpipe } from "../modules/splitpipe/main.nf"
+include { merge_fastqs; splitpipe_all; splitpipe_combine } from "../modules/split-pipe/main.nf"
 
-include { scrublet } from "../modules/scrublet/main.nf"
+include { scrublet; } from "../modules/scrublet/main.nf"
 
 
 def spaceSplit(string) { 
@@ -23,7 +23,7 @@ def makeCombinedMatrixPath(string_1, string_2) {
 
 
 
-workflow splitpipe_pb {
+workflow splitpipe_pb_extended {
      
      main: 
 
@@ -38,35 +38,46 @@ workflow splitpipe_pb {
        System.exit(1)
        }
        
-       merge_fastqs(samples_sublibraries)
+       merge_fastqs(params.input_dir, params.output_dir, samples_sublibraries)
+       split_pipe_input = merge_fastqs.out.sublibrary_read_pairs
+
        fastqc(merge_fastqs.out.sublibrary_read_pairs)
-       splitpipe_all(merge_fastqs.out.sublibrary_read_pairs)
  
        } else {
        println("Not merging FASTQ files. Detecting sublibrary file pairs using the input directory and FASTQ pattern.")
        samples_sublibraries = Channel.fromFilePairs( params.input_dir + '/' + params.fastq_pattern, flat: true )
        fastqc(samples_sublibraries)
-       splitpipe_all(samples_sublibraries)
+       split_pipe_input = samples_sublibraries
        }
        
+       splitpipe_all(split_pipe_input, params.kit, params.ref, params.sample_list, params.output_dir)
+
+       if ( params.multiqc ) {
        multiqc(fastqc.out.fastqc_outputs.collect())
+
+       }
 
        if ( params.combine ) {
 
-       splitpipe_combine(splitpipe_all.out.splitpipe_all_dir.collect())
-}
-       
+       splitpipe_combine(splitpipe_all.out.splitpipe_all_dir.collect(), params.output_dir)
        // read in the sample names to find them in the combined output directory for scrublet
-       
-       sample_names = Channel.fromList(file(params.sample_list).readLines()).map { i -> spaceSplit(i)[0] }
-
-       comb_out_dir = splitpipe_combine.out.splitpipe_combined_by_sample
 
        // create a channel with sample name and the path of the combined output matrix 
 
-       combined_output_matrices = sample_names.map { i -> [ i, makeCombinedMatrixPath(comb_out_dir, i)] }
+       comb_path = Channel.fromPath(splitpipe_combine.out.splitpipe_combined_by_sample).map { i -> i.toString()}
+
+       sample_names = Channel.fromList(file(params.sample_list).readLines()).map { i -> spaceSplit(i)[0] }
+
+       combined_output_matrices = sample_names.map { i -> [ i,
+       makeCombinedMatrixPath(comb_path, i)] }
 
        scrublet(combined_output_matrices)
+}
 
+}
+
+workflow {
+     main:
+     splitpipe_pb_extended()
 }
 

@@ -6,8 +6,6 @@ nextflow.enable.dsl=2
 process fastqc {
 
      publishDir path: "${params.output_dir}/fastqc/", mode: "copy"
-     
-     memory '4 GB'
    
      input:
      tuple val(name), path(read_1), path(read_2)

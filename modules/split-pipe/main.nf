@@ -6,9 +6,11 @@ nextflow.enable.dsl=2
 process merge_fastqs {
 
 
-       publishDir path: "${params.output_dir}/split_pipe/merged_fastqs/", mode: "symlink"
+       publishDir path: "${output_dir}/split_pipe/merged_fastqs/", mode: "symlink"
 
        input: 
+       path input_dir
+       path output_dir
        val sublibrary
     
        output: 
@@ -16,18 +18,22 @@ process merge_fastqs {
 
        script: 
        """
-       cat ${params.input_dir}/${sublibrary}*R1*fastq.gz > ${sublibrary}_R1.fastq.gz
-       cat ${params.input_dir}/${sublibrary}*R2*fastq.gz > ${sublibrary}_R2.fastq.gz        
+       cat ${input_dir}/${sublibrary}*R1*fastq.gz > ${sublibrary}_R1.fastq.gz
+       cat ${input_dir}/${sublibrary}*R2*fastq.gz > ${sublibrary}_R2.fastq.gz        
        """
 }
 
 
 process splitpipe_all {
 
-       publishDir path: "${params.output_dir}/split_pipe/all/", mode: "copy"
+       publishDir path: "${output_dir}/split_pipe/all/", mode: "copy"
 
        input: 
        tuple val(sublibrary), path(read_1), path(read_2)
+       val kit
+       val reference
+       path sample_list
+       path output_dir
 
        output: 
        path ("${sublibrary}/*"), emit: splitpipe_all_outputs
@@ -36,12 +42,12 @@ process splitpipe_all {
        script:
        """ 
        split-pipe --mode all \
-       --kit ${params.kit} \
-       --genome_dir ${params.ref} \
+       --kit ${kit} \
+       --genome_dir ${reference} \
        --fq1 ${read_1} \
        --fq2 ${read_2} \
        --output_dir ${sublibrary}/ \
-       --samp_list ${params.sample_list}
+       --samp_list ${sample_list}
        """
 
 }
@@ -49,11 +55,12 @@ process splitpipe_all {
 
 process splitpipe_combine {
 
-       publishDir path: "${params.output_dir}/split_pipe/", mode: "copy"
+       publishDir path: "${output_dir}/split_pipe/", mode: "copy"
 
        input: 
        
        path sublibrary_path_list
+       path output_dir
 
        output: 
        path("combined/"), emit: splitpipe_combined_by_sample
@@ -71,7 +78,7 @@ process splitpipe_combine {
 
 workflow pb_splitpipe {
 
-       take: 
+       take:
        sub_libraries
 
        main:
@@ -87,17 +94,18 @@ workflow pb_splitpipe {
        System.exit(1)
        }
        
-       merge_fastqs(samples_sublibraries)
-       splitpipe_all(merge_fastqs.out.sublibrary_read_pairs)
+       merge_fastqs(params.input_dir, params.output_dir, samples_sublibraries)
+       splitpipe_all(merge_fastqs.out.sublibrary_read_pairs, params.kit, params.ref, params.sample_list, params.output_dir)
  
        } else {
        println("Not merging FASTQ files. Detecting sublibrary file pairs using the input directory and FASTQ pattern.")
        samples_sublibraries = Channel.fromFilePairs( params.input_dir + '/' + params.fastq_pattern, flat: true )
-       splitpipe_all(samples_sublibraries)
+       splitpipe_all(samples_sublibraries, params.kit, params.ref, params.sample_list, params.output_dir)
+
        }
        if ( params.combine ) {
 
-       splitpipe_combine(splitpipe_all.out.splitpipe_all_dir.collect())
+       splitpipe_combine(splitpipe_all.out.splitpipe_all_dir.collect(), params.output_dir)
 }
       
 }
@@ -108,11 +116,6 @@ workflow {
 
      main: 
 
-     
      pb_splitpipe(params.sublibrary)
 
 }
-
-
-
-

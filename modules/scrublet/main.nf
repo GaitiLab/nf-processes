@@ -10,7 +10,6 @@ if (params.transpose) {
    transpose_addition = ""
 }
 
-
 binDir = Paths.get(workflow.projectDir.toString(), "bin/")
 
 process scrublet {
@@ -18,7 +17,7 @@ process scrublet {
         publishDir path: "${params.output_dir}/scrublet/${sample_name}/", mode: "copy"
 
         input: 
-            tuple val(sample_name), path(matrix)
+            tuple val(sample_name), val(matrix)
 
         output: 
             tuple val(sample_name), path("${sample_name}_scrublet_detection.csv"), emit: detections
