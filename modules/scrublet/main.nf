@@ -15,7 +15,7 @@ binDir = Paths.get(workflow.projectDir.toString(), "bin/")
 
 process scrublet {
 
-        publishDir path: "${params.output_dir}/${sample_name}/scrublet/", mode: "copy"
+        publishDir path: "${params.output_dir}/scrublet/${sample_name}/", mode: "copy"
 
         input: 
             tuple val(sample_name), path(matrix)

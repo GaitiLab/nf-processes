@@ -134,3 +134,7 @@ dmypy.json
 
 
 .DS_Store
+
+test_utils/
+
+*.pid

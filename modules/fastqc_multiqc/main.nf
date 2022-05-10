@@ -10,7 +10,7 @@ process fastqc {
      memory '4 GB'
    
      input:
-     tuple val(name), path(reads)
+     tuple val(name), path(read_1), path(read_2)
      
      output: 
      path ("*.zip"), emit: fastqc_outputs
@@ -22,8 +22,8 @@ process fastqc {
      """
      fastqc --outdir . \
      -t ${task.cpus} \
-     ${reads.get(0)} \
-     ${reads.get(1)}
+     ${read_1} \
+     ${read_2}
      """
 
 }
@@ -57,7 +57,7 @@ workflow qc_workflow {
 
        main:
 
-       fastqs = Channel.fromFilePairs( params.input_pattern )
+       fastqs = Channel.fromFilePairs( params.input_pattern, flat:true )
        .ifEmpty { exit 1, "Cannot find any reads matching: ${params.input_pattern}\n" }
 
        fastqc(fastqs)
