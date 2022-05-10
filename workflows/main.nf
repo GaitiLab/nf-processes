@@ -16,7 +16,7 @@ def spaceSplit(string) {
      string.split(" ")
      }
 
-          
+// define a matrix path for the combined outputs by sample
 def makeCombinedMatrixPath(string_1, string_2) {
      string_1 + "/" + string_2  + "/" + "DGE_filtered/DGE.mtx"
      }
@@ -50,6 +50,7 @@ workflow splitpipe_pb {
        }
        
        multiqc(fastqc.out.fastqc_outputs.collect())
+
        if ( params.combine ) {
 
        splitpipe_combine(splitpipe_all.out.splitpipe_all_dir.collect())
@@ -59,7 +60,11 @@ workflow splitpipe_pb {
        
        sample_names = Channel.fromList(file(params.sample_list).readLines()).map { i -> spaceSplit(i)[0] }
 
-       combined_output_matrices = sample_names.map { i -> [ i, makeCombinedMatrixPath(output_path, i)] }
+       comb_out_dir = splitpipe_combine.out.splitpipe_combined_by_samplesplitpipe_combined_by_sample
+
+       // create a channel with sample name and the path of the combined output matrix 
+
+       combined_output_matrices = sample_names.map { i -> [ i, makeCombinedMatrixPath(comb_out_dir, i)] }
 
        scrublet(combined_output_matrices)
 
