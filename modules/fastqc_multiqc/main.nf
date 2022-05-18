@@ -5,10 +5,11 @@ nextflow.enable.dsl=2
 
 process fastqc {
 
-     publishDir path: "${params.output_dir}/fastqc/", mode: "copy"
+     publishDir path: "${output_dir}/fastqc/", mode: "copy"
    
      input:
      tuple val(name), path(read_1), path(read_2)
+     path output_dir
      
      output: 
      path ("*.zip"), emit: fastqc_outputs
@@ -29,10 +30,13 @@ process fastqc {
 
 process multiqc {
 
-     publishDir path: "${params.output_dir}/multiqc/", mode: "copy"
+     publishDir path: "${output_dir}/multiqc/", mode: "copy"
 
      input: 
      path fastqc_outputs
+     path output_dir
+     val multiqc_title
+
 
 
      output: 
@@ -41,9 +45,9 @@ process multiqc {
 
      script: 
      """
-     mkdir -p ${params.output_dir}/multiqc/
+     mkdir -p ${output_dir}/multiqc/
      multiqc --force --interactive \
-     --title ${params.multiqc_title} \
+     --title ${multiqc_title} \
      --filename "multiqc_report.html" \
      ${fastqc_outputs}
      """
@@ -58,11 +62,11 @@ workflow qc_workflow {
        fastqs = Channel.fromFilePairs( params.input_pattern, flat:true )
        .ifEmpty { exit 1, "Cannot find any reads matching: ${params.input_pattern}\n" }
 
-       fastqc(fastqs)
+       fastqc(fastqs, params.fastqc.output_dir)
  
        if ( params.multiqc ) {
 
-       multiqc(fastqc.out.fastqc_outputs.collect())
+       multiqc(fastqc.out.fastqc_outputs.collect(), params.fastqc.output_dir,params.multiqc.multiqc_title)
 
 }      
 

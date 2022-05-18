@@ -14,6 +14,8 @@ include { scrublet; } from "../../modules/scrublet/main.nf"
 
 include {concat_pattern_dir; use_introns; cellranger_count } from "../../modules/cellranger/main.nf"
 
+binDir = Paths.get(workflow.projectDir.toString(), "bin/")
+
 
 def spaceSplit(string) { 
      string.split(" ")
@@ -92,7 +94,7 @@ workflow scRNA {
      .ifEmpty { exit 1, "Could not parse sample names from : ${params.sample_list}\n" }
 
 
-     splitpipe_combine(splitpipe_all.out.splitpipe_all_dir.collect(), params.output_dir, sample_names)
+     splitpipe_combine(splitpipe_all.out.splitpipe_all_dir.collect(), params.output_dir)
 
      scrublet_input = splitpipe_combine.out.sample_filtered_matrix
 

@@ -14,7 +14,8 @@ process epianeuFinder {
 
        input: 
        tuple val(sample_name), path(input_fragments)
-       each min_fragment_number    
+       each min_fragment_number  
+         
 
        output: 
        tuple val(sample_name), path("${sample_name}_${min_fragment_number}/"), emit: epianeufinder_dir

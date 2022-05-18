@@ -59,9 +59,7 @@ workflow splitpipe_pb_extended {
 
        if ( params.combine ) {
 
-
      // create a channel with sample name and the path of the combined output matrix (cast as string)
-
 
      splitpipe_combine(splitpipe_all.out.splitpipe_all_dir.collect(), params.output_dir)
 
