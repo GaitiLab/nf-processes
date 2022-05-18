@@ -17,6 +17,10 @@ def spaceSplit(string) {
      string.split(" ")
      }
 
+def makeCombinedMatrixPath(string_1, string_2) {
+    Paths.get(string_1.toString() + "/" + string_2.toString()  + "/" + "DGE_filtered/DGE.mtx")
+     }
+
 workflow splitpipe_pb_extended {
      
      main: 
@@ -56,13 +60,17 @@ workflow splitpipe_pb_extended {
 
      // create a channel with sample name and the path of the combined output matrix (cast as string)
 
+
+     splitpipe_combine(splitpipe_all.out.splitpipe_all_dir.collect(), params.output_dir)
+
+     combine_out = splitpipe_combine.out.splitpipe_combined_by_sample
+
      sample_names = Channel.fromList(file(params.sample_list).readLines()).map { i -> spaceSplit(i)[0] }
 
+     combined_output_matrices = sample_names.combine(combine_out).map { i, j -> [ i,
+      makeCombinedMatrixPath(j, i)] }
 
-     splitpipe_combine(splitpipe_all.out.splitpipe_all_dir.collect(), params.output_dir, sample_names)
-       
-
-     scrublet(splitpipe_combine.out.sample_filtered_matrix)
+     scrublet(combined_output_matrices)
 
 }
 

@@ -61,11 +61,9 @@ process splitpipe_combine {
        
        path sublibrary_path_list
        path output_dir
-       val sample_name
 
        output: 
        path ("combined/"), emit: splitpipe_combined_by_sample
-       tuple val(sample_name), path("combined/${sample_name}/DGE_filtered/DGE.mtx"), emit: sample_filtered_matrix
 
 
        script: 
@@ -109,7 +107,7 @@ workflow pb_splitpipe {
 
 
        sample_names = Channel.fromList(file(params.sample_list).readLines()).map { i -> spaceSplit(i)[0] }.view()
-       splitpipe_combine(splitpipe_all.out.splitpipe_all_dir.collect(), params.output_dir, sample_name)
+       splitpipe_combine(splitpipe_all.out.splitpipe_all_dir.collect(), params.output_dir)
 }
       
 }

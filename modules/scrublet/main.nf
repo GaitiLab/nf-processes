@@ -17,8 +17,8 @@ process scrublet {
         publishDir path: "${params.output_dir}/scrublet/${sample_name}/", mode: "copy"
 
         input: 
-            tuple val(sample_name), val(matrix)
-
+            tuple val(sample_name), path(matrix)
+  
         output: 
             tuple val(sample_name), path("${sample_name}_scrublet_detection.csv"), emit: detections
 
