@@ -105,8 +105,6 @@ workflow pb_splitpipe {
        }
        if ( params.combine ) {
 
-
-       sample_names = Channel.fromList(file(params.sample_list).readLines()).map { i -> spaceSplit(i)[0] }.view()
        splitpipe_combine(splitpipe_all.out.splitpipe_all_dir.collect(), params.output_dir)
 }
       
