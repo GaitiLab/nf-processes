@@ -5,15 +5,7 @@ import java.nio.file.Paths
 nextflow.enable.dsl=2
 
 
-def toTranspose(transpose) { 
-     if (transpose) {
-        transpose_addition = "-t" 
-     } else {
-         transpose_addition = ""
-}
-    transpose_addition
-     }
-
+include { toTranspose } from "../../utils/utils.nf"
 
 
 binDir = Paths.get(workflow.projectDir.toString(), "bin/")

@@ -36,8 +36,8 @@ workflow scRNA {
 
           if ( params.sample_sheet == '' ) {
 
-       fastqs = Channel.fromFilePairs( concat_pattern_dir(params.input_dir,params.fastq_pattern) )
-       .ifEmpty { exit 1, "Cannot find any reads matching: ${params.input_dir}\n" }
+       fastqs = Channel.fromFilePairs( concat_pattern_dir(params.input_dir, params.fastq_pattern) )
+       .ifEmpty { exit 1, "Cannot find any reads matching: ${params.fastq_pattern} in ${params.input_dir}\n" }
 
        //strip the fastq names from the pairs input channel if no sample sheet is provided, split at _S
        stripped = fastqs

@@ -5,6 +5,8 @@ nextflow.enable.dsl=2
 import java.nio.file.Path
 import java.nio.file.Paths
 
+binDir = Paths.get(workflow.projectDir.toString(), "bin/")
+
 
 include { fastqc; multiqc; } from "../../modules/fastqc_multiqc/main.nf"
 
@@ -12,16 +14,8 @@ include { merge_fastqs; splitpipe_all; splitpipe_combine } from "../../modules/s
 
 include { scrublet; toTranspose } from "../../modules/scrublet/main.nf"
 
-binDir = Paths.get(workflow.projectDir.toString(), "bin/")
+include { spaceSplit; makeCombinedMatrixPath; concat_pattern_dir; use_introns; toTranspose } from "../../utils/utils.nf"
 
-
-def spaceSplit(string) { 
-     string.split(" ")
-     }
-
-def makeCombinedMatrixPath(string_1, string_2) {
-    Paths.get(string_1.toString() + "/" + string_2.toString()  + "/" + "DGE_filtered/DGE.mtx")
-     }
 
 workflow splitpipe_pb_extended {
      
@@ -45,7 +39,8 @@ workflow splitpipe_pb_extended {
  
        } else {
        println("Not merging FASTQ files. Detecting sublibrary file pairs using the input directory and FASTQ pattern.")
-       samples_sublibraries = Channel.fromFilePairs( params.input_dir + '/' + params.fastq_pattern, flat: true )
+       samples_sublibraries = Channel.fromFilePairs( concat_pattern_dir(params.input_dir, params.fastq_pattern), flat: true )
+       .ifEmpty { exit 1, "Cannot find any reads matching: ${params.fastq_pattern} in ${params.input_dir}\n" }
        fastqc(samples_sublibraries, params.output_dir)
        split_pipe_input = samples_sublibraries
        }

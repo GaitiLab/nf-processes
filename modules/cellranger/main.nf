@@ -3,19 +3,7 @@
 nextflow.enable.dsl=2
 
 
-def concat_pattern_dir(dir, pattern) { dir + '/' + pattern }
-
-
-def use_introns () { 
-       if ( params.include_introns ) {
-
-       introns = '--include-introns'
-       } else {
-       introns = ''
-}
-       introns
-
-}
+include {use_introns; concat_pattern_dir} from "../../utils/utils.nf"
 
 process cellranger_count {
 
@@ -66,7 +54,7 @@ workflow cellranger {
                 }
                 .unique()
           
-       cellranger_count(stripped, params.cellranger.input_dir, params.cellranger.output_dir, params.cellranger.ref,
+       cellranger_count(stripped, params.input_dir, params.output_dir, params.cellranger.ref,
        params.cellranger.expected_cells, use_introns())
 
 }

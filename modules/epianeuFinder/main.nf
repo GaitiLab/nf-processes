@@ -10,11 +10,18 @@ binDir = Paths.get(workflow.projectDir.toString(), "bin/")
 process epianeuFinder {
 
 
-       publishDir path: "${params.output_dir}/", mode: "copy"
+       publishDir path: "${output_dir}/epianeuFinder/", mode: "copy"
 
        input: 
        tuple val(sample_name), path(input_fragments)
        each min_fragment_number  
+       path output_dir
+       path blacklist
+       path ref_genome
+       val window
+       val numcores
+       val title
+
          
 
        output: 
@@ -25,12 +32,12 @@ process epianeuFinder {
        """
        Rscript $binDir/run_epianeuFinder_HPC.R -i ${input_fragments} \
        -o ${sample_name}_${min_fragment_number}/ \
-       -b ${params.blacklist} \
+       -b ${blacklist} \
        -m ${min_fragment_number} \
-       -g ${params.ref_genome} \
-       -w ${params.window} \
-       -n ${params.numcores} \
-       -t ${params.title}                              
+       -g ${ref_genome} \
+       -w ${window} \
+       -n ${numcores} \
+       -t ${title}                              
        """
 }
 
@@ -45,7 +52,8 @@ workflow run_epianeuFinder_HPC {
 
        possible_min_frags = Channel.fromList( params.minfrags )       
 
-       epianeuFinder(fragment_paths, possible_min_frags)
+       epianeuFinder(fragment_paths, possible_min_frags, params.output_dir, params.epianeu.blacklist, params.epianeu.ref_genome,
+       params.epianeu.window, params.epianeu.numcores, params.epianeu.title)
 
 
 }
