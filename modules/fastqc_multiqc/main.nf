@@ -62,11 +62,11 @@ workflow qc_workflow {
        fastqs = Channel.fromFilePairs( params.input_pattern, flat:true )
        .ifEmpty { exit 1, "Cannot find any reads matching: ${params.input_pattern}\n" }
 
-       fastqc(fastqs, params.fastqc.output_dir)
+       fastqc(fastqs, params.output_dir)
  
        if ( params.multiqc ) {
 
-       multiqc(fastqc.out.fastqc_outputs.collect(), params.fastqc.output_dir,params.multiqc.multiqc_title)
+       multiqc(fastqc.out.fastqc_outputs.collect(), params.output_dir, params.multiqc.multiqc_title)
 
 }      
 

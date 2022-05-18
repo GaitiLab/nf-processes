@@ -41,19 +41,19 @@ workflow splitpipe_pb_extended {
        merge_fastqs(params.input_dir, params.output_dir, samples_sublibraries)
        split_pipe_input = merge_fastqs.out.sublibrary_read_pairs
 
-       fastqc(merge_fastqs.out.sublibrary_read_pairs)
+       fastqc(merge_fastqs.out.sublibrary_read_pairs, params.output_dir)
  
        } else {
        println("Not merging FASTQ files. Detecting sublibrary file pairs using the input directory and FASTQ pattern.")
        samples_sublibraries = Channel.fromFilePairs( params.input_dir + '/' + params.fastq_pattern, flat: true )
-       fastqc(samples_sublibraries)
+       fastqc(samples_sublibraries, params.output_dir)
        split_pipe_input = samples_sublibraries
        }
        
        splitpipe_all(split_pipe_input, params.kit, params.ref, params.sample_list, params.output_dir)
 
        if ( params.multiqc ) {
-       multiqc(fastqc.out.fastqc_outputs.collect())
+       multiqc(fastqc.out.fastqc_outputs.collect(), params.output_dir, params.multiqc.multiqc_title)
 
        }
 
