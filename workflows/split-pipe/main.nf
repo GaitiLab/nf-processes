@@ -10,7 +10,9 @@ include { fastqc; multiqc; } from "../../modules/fastqc_multiqc/main.nf"
 
 include { merge_fastqs; splitpipe_all; splitpipe_combine } from "../../modules/split-pipe/main.nf"
 
-include { scrublet; } from "../../modules/scrublet/main.nf"
+include { scrublet; toTranspose } from "../../modules/scrublet/main.nf"
+
+binDir = Paths.get(workflow.projectDir.toString(), "bin/")
 
 
 def spaceSplit(string) { 
@@ -70,7 +72,8 @@ workflow splitpipe_pb_extended {
      combined_output_matrices = sample_names.combine(combine_out).map { i, j -> [ i,
       makeCombinedMatrixPath(j, i)] }
 
-     scrublet(combined_output_matrices)
+     scrublet(combined_output_matrices, params.output_dir, params.expected_rate, params.min_counts, params.min_cells,
+       params.gene_variability, params.princ_components, toTranspose(params.transpose))
 
 }
 
