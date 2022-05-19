@@ -12,7 +12,7 @@ include { fastqc; multiqc; } from "../../modules/fastqc_multiqc/main.nf"
 
 include { merge_fastqs; splitpipe_all; splitpipe_combine } from "../../modules/split-pipe/main.nf"
 
-include { scrublet; toTranspose } from "../../modules/scrublet/main.nf"
+include { scrublet } from "../../modules/scrublet/main.nf"
 
 include { spaceSplit; makeCombinedMatrixPath; concat_pattern_dir; use_introns; toTranspose } from "../../utils/utils.nf"
 
@@ -48,7 +48,7 @@ workflow splitpipe_pb_extended {
        splitpipe_all(split_pipe_input, params.kit, params.ref, params.sample_list, params.output_dir)
 
        if ( params.multiqc ) {
-       multiqc(fastqc.out.fastqc_outputs.collect(), params.output_dir, params.multiqc.multiqc_title)
+       multiqc(fastqc.out.fastqc_outputs.collect(), params.output_dir, params.multiqc_title)
 
        }
 

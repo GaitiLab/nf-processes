@@ -12,28 +12,30 @@ binDir = Paths.get(workflow.projectDir.toString(), "bin/")
 
 process scrublet {
 
-        publishDir path: "${params.output_dir}/scrublet/${sample_name}/", mode: "copy"
+    label 'scrublet'
 
-        input: 
-            tuple val(sample_name), path(matrix)
-            path output_dir
-            val expected_rate
-            val min_counts
-            val min_cells
-            val gene_variability
-            val princ_components
-            val transpose
+    publishDir path: "${params.output_dir}/scrublet/${sample_name}/", mode: "copy"
+
+    input: 
+    tuple val(sample_name), path(matrix)
+    path output_dir
+    val expected_rate
+    val min_counts
+    val min_cells
+    val gene_variability
+    val princ_components
+    val transpose
   
-        output: 
-            tuple val(sample_name), path("${sample_name}_scrublet_detection.csv"), emit: detections
+    output: 
+    tuple val(sample_name), path("${sample_name}_scrublet_detection.csv"), emit: detections
 
 
-        script:
-        """
-        python $binDir/scrublet_cell_prediction_CI.py -i ${matrix} -o ${sample_name}_scrublet_detection.csv \
+    script:
+    """
+    python $binDir/scrublet_cell_prediction_CI.py -i ${matrix} -o ${sample_name}_scrublet_detection.csv \
         -e ${expected_rate} -mu ${min_counts} -mc ${min_cells} -g ${gene_variability} \
         -pc ${princ_components} ${transpose}
-        """       
+    """       
 
 }
 

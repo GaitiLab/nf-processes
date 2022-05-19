@@ -8,6 +8,8 @@ include {concat_pattern_dir} from "../../utils/utils.nf"
 
 process fastqc {
 
+     label 'fastqc'
+
      publishDir path: "${output_dir}/fastqc/", mode: "copy"
    
      input:
@@ -32,6 +34,8 @@ process fastqc {
 
 
 process multiqc {
+
+     label 'multiqc'
 
      publishDir path: "${output_dir}/multiqc/", mode: "copy"
 

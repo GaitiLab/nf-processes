@@ -5,6 +5,7 @@ nextflow.enable.dsl=2
 
 process merge_fastqs {
 
+       label 'splitpipe'
 
        publishDir path: "${output_dir}/split_pipe/merged_fastqs/", mode: "symlink"
 
@@ -25,6 +26,8 @@ process merge_fastqs {
 
 
 process splitpipe_all {
+
+        label 'splitpipe'
 
        publishDir path: "${output_dir}/split_pipe/all/", mode: "copy"
 
@@ -54,6 +57,8 @@ process splitpipe_all {
 
 
 process splitpipe_combine {
+
+        label 'splitpipe'
 
        publishDir path: "${output_dir}/split_pipe/", mode: "copy"
 

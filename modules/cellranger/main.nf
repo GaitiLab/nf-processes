@@ -7,6 +7,7 @@ include {use_introns; concat_pattern_dir} from "../../utils/utils.nf"
 
 process cellranger_count {
 
+       module = 'cellranger'
 
        publishDir path: "${output_dir}/cellranger_count/", mode: "copy"
 

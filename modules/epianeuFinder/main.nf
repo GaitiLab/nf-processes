@@ -9,6 +9,7 @@ binDir = Paths.get(workflow.projectDir.toString(), "bin/")
 
 process epianeuFinder {
 
+       module = 'R'
 
        publishDir path: "${output_dir}/epianeuFinder/", mode: "copy"
 
