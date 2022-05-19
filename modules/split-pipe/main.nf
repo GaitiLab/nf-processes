@@ -90,7 +90,7 @@ workflow pb_splitpipe {
        
        if ( params.merge_fastqs ) {
 
-        if ( sub_libraries instanceof List ) {
+       if ( sub_libraries instanceof List ) {
        samples_sublibraries = Channel.fromList(sub_libraries)
        } else if ( sub_libraries.contains('.txt') & sub_libraries instanceof String) {
        samples_sublibraries = Channel.fromList(file(sub_libraries).readLines())
@@ -101,7 +101,7 @@ workflow pb_splitpipe {
        
        merge_fastqs(params.input_dir, params.output_dir, samples_sublibraries)
        splitpipe_all(merge_fastqs.out.sublibrary_read_pairs, params.kit, params.ref, params.sample_list, params.output_dir)
- 
+       
        } else {
        println("Not merging FASTQ files. Detecting sublibrary file pairs using the input directory and FASTQ pattern.")
        samples_sublibraries = Channel.fromFilePairs( params.input_dir + '/' + params.fastq_pattern, flat: true )
