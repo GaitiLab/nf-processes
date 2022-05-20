@@ -5,7 +5,8 @@ nextflow.enable.dsl=2
 import java.nio.file.Path
 import java.nio.file.Paths
 
-binDir = Paths.get(workflow.projectDir.toString(), "bin/")
+// get the bindir for the entire repo relative
+binDir = Paths.get(workflow.projectDir.toString(), "../../bin/")
 
 
 include { fastqc; multiqc; } from "../../modules/fastqc_multiqc/main.nf"
@@ -23,10 +24,10 @@ workflow splitpipe_pb_extended {
 
      if ( params.merge_fastqs ) {
 
-     if ( sub_libraries instanceof List ) {
-       samples_sublibraries = Channel.fromList(sub_libraries)
-       } else if ( sub_libraries.contains('.txt') & sub_libraries instanceof String) {
-       samples_sublibraries = Channel.fromList(file(sub_libraries).readLines())
+     if ( params.sublibrary instanceof List ) {
+       samples_sublibraries = Channel.fromList(params.sublibrary)
+       } else if ( params.sublibrary.contains('.txt') & params.sublibrary instanceof String) {
+       samples_sublibraries = Channel.fromList(file(params.sublibrary).readLines())
        } else {
        println("If merging FASTQs, sublibraries must be either a list of strings or a .txt file with one sublibrary per line.")
        System.exit(1)

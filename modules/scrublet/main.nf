@@ -8,7 +8,7 @@ nextflow.enable.dsl=2
 include { toTranspose } from "../../utils/utils.nf"
 
 
-binDir = Paths.get(workflow.projectDir.toString(), "bin/")
+binDir = Paths.get(workflow.projectDir.toString(), "../../bin/")
 
 process scrublet {
 
