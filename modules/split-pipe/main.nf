@@ -58,7 +58,7 @@ process splitpipe_all {
 
 process splitpipe_combine {
 
-        label 'splitpipe'
+       label 'splitpipe'
 
        publishDir path: "${output_dir}/split_pipe/", mode: "copy"
 
