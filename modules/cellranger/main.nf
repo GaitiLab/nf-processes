@@ -3,44 +3,37 @@
 nextflow.enable.dsl=2
 
 
-def concat_pattern_dir(dir, pattern) { dir + '/' + pattern }
-
-
-def use_introns () { 
-       if ( params.include_introns ) {
-
-       introns = '--include-introns'
-       } else {
-       introns = ''
-}
-       introns
-
-} 
-
-intron_include = use_introns()
+include {use_introns; concat_pattern_dir} from "../../utils/utils.nf"
 
 process cellranger_count {
 
+       module = 'cellranger'
 
-       publishDir path: "${params.output_dir}/cellranger_count/", mode: "copy"
+       publishDir path: "${output_dir}/cellranger_count/", mode: "copy"
 
        input: 
        val sample_name
+       path input_dir
+       path output_dir
+       val ref
+       val expected_cells
+       val introns
     
        output: 
        path "${sample_name}/*"
        path "${sample_name}/outs/*"
+       tuple val(sample_name), path("${sample_name}/outs/filtered_feature_bc_matrix/matrix.mtx.gz"), emit: cellranger_filtered_matrix
 
        script: 
        """
        cellranger count --id=${sample_name} \
-                   --transcriptome=${params.transcriptome_ref} \
-                   --fastqs=${params.input_dir} \
+                   --transcriptome=${ref} \
+                   --fastqs=${input_dir} \
                    --sample=${sample_name} \
-                   --expect-cells=${params.expected_cells} \
+                   --expect-cells=${expected_cells} \
                    --localcores=8 \
                    --localmem=64 \
-                   ${intron_include}
+                   ${introns)}
                    
        """
 }
@@ -62,7 +55,8 @@ workflow cellranger {
                 }
                 .unique()
           
-       cellranger_count(stripped)
+       cellranger_count(stripped, params.input_dir, params.output_dir, params.cellranger.ref,
+       params.cellranger.expected_cells, use_introns())
 
 }
                

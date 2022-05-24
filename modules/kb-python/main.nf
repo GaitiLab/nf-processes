@@ -4,10 +4,11 @@ nextflow.enable.dsl=2
 
 
 process kb_ref {
+
+     module = 'python3'
    
      publishDir path: "${params.output_dir}/ref/", mode: "copy"
 
-  
      input: 
      path cdna_fasta
      path primary_fasta

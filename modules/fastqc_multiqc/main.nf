@@ -3,14 +3,18 @@
 nextflow.enable.dsl=2
 
 
+include {concat_pattern_dir} from "../../utils/utils.nf"
+
+
 process fastqc {
 
-     publishDir path: "${params.output_dir}/fastqc/", mode: "copy"
-     
-     memory '4 GB'
+     label 'fastqc'
+
+     publishDir path: "${output_dir}/fastqc/", mode: "copy"
    
      input:
-     tuple val(name), path(reads)
+     tuple val(name), path(read_1), path(read_2)
+     path output_dir
      
      output: 
      path ("*.zip"), emit: fastqc_outputs
@@ -22,8 +26,8 @@ process fastqc {
      """
      fastqc --outdir . \
      -t ${task.cpus} \
-     ${reads.get(0)} \
-     ${reads.get(1)}
+     ${read_1} \
+     ${read_2}
      """
 
 }
@@ -31,10 +35,15 @@ process fastqc {
 
 process multiqc {
 
-     publishDir path: "${params.output_dir}/multiqc/", mode: "copy"
+     label 'multiqc'
+
+     publishDir path: "${output_dir}/multiqc/", mode: "copy"
 
      input: 
      path fastqc_outputs
+     path output_dir
+     val multiqc_title
+
 
 
      output: 
@@ -43,9 +52,9 @@ process multiqc {
 
      script: 
      """
-     mkdir -p ${params.output_dir}/multiqc/
+     mkdir -p ${output_dir}/multiqc/
      multiqc --force --interactive \
-     --title ${params.multiqc_title} \
+     --title ${multiqc_title} \
      --filename "multiqc_report.html" \
      ${fastqc_outputs}
      """
@@ -57,14 +66,14 @@ workflow qc_workflow {
 
        main:
 
-       fastqs = Channel.fromFilePairs( params.input_pattern )
-       .ifEmpty { exit 1, "Cannot find any reads matching: ${params.input_pattern}\n" }
+       fastqs = Channel.fromFilePairs( concat_pattern_dir(params.input_dir, params.fastq_pattern), flat:true )
+       .ifEmpty { exit 1, "Cannot find any reads matching: ${params.fastq_pattern} in ${params.input_dir}\n" }
 
-       fastqc(fastqs)
+       fastqc(fastqs, params.output_dir)
  
        if ( params.multiqc ) {
 
-       multiqc(fastqc.out.fastqc_outputs.collect())
+       multiqc(fastqc.out.fastqc_outputs.collect(), params.output_dir, params.multiqc.multiqc_title)
 
 }      
 
