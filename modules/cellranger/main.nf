@@ -3,11 +3,11 @@
 nextflow.enable.dsl=2
 
 
-include {use_introns; concat_pattern_dir} from "../../utils/utils.nf"
+include { use_introns; concat_pattern_dir } from "../../utils/utils.nf"
 
 process cellranger_count {
 
-       module = 'cellranger'
+       label 'cellranger'
 
        publishDir path: "${output_dir}/cellranger_count/", mode: "copy"
 
@@ -33,7 +33,7 @@ process cellranger_count {
                    --expect-cells=${expected_cells} \
                    --localcores=8 \
                    --localmem=64 \
-                   ${introns)}
+                   ${introns}
                    
        """
 }
@@ -43,9 +43,9 @@ workflow cellranger {
        main:
 
 
-       if ( params.sample_sheet == '' ) {
+       if ( params.cellranger.sample_sheet == '' ) {
 
-       fastqs = Channel.fromFilePairs( concat_pattern_dir(params.input_dir,params.fastq_pattern) )
+       fastqs = Channel.fromFilePairs( concat_pattern_dir(params.input_dir, params.cellranger.fastq_pattern) )
        .ifEmpty { exit 1, "Cannot find any reads matching: ${params.input_dir}\n" }
 
        //strip the fastq names from the pairs input channel if no sample sheet is provided, split at _S
@@ -56,7 +56,7 @@ workflow cellranger {
                 .unique()
           
        cellranger_count(stripped, params.input_dir, params.output_dir, params.cellranger.ref,
-       params.cellranger.expected_cells, use_introns())
+       params.cellranger.expected_cells, use_introns(params.cellranger.include_introns))
 
 }
                
