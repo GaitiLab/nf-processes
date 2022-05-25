@@ -56,7 +56,7 @@ workflow cellranger {
                 .unique()
           
        cellranger_count(stripped, params.input_dir, params.output_dir, params.cellranger.ref,
-       params.cellranger.expected_cells, use_introns())
+       params.cellranger.expected_cells, use_introns(params.cellranger.include_introns))
 
 }
                

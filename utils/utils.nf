@@ -17,8 +17,8 @@ def makeCombinedMatrixPath(string_1, string_2) {
 def concat_pattern_dir(dir, pattern) { dir + '/' + pattern }
 
 
-def use_introns () { 
-       if ( params.include_introns ) {
+def use_introns (intron_param) { 
+       if ( intron_param ) {
 
        introns = '--include-introns'
        } else {
