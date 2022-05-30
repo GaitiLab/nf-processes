@@ -21,18 +21,14 @@ workflow scRNA {
      
      main: 
 
-     
-     if ( params.method != "cellranger" && params.method != "split-pipe") {
-          println("Error: incorrect scRNA method specified. Please select one of cellranger or split-pipe.")
-          System.exit(1)
-     }
+     if ( params.method == "cellranger" || params.method == "split-pipe") {
 
      if (params.method == "cellranger") {
 
-          if ( params.sample_sheet == '' ) {
+     if ( params.cellranger.sample_sheet == '' ) {
 
-       fastqs = Channel.fromFilePairs( concat_pattern_dir(params.input_dir, params.fastq_pattern) )
-       .ifEmpty { exit 1, "Cannot find any reads matching: ${params.fastq_pattern} in ${params.input_dir}\n" }
+       fastqs = Channel.fromFilePairs( concat_pattern_dir(params.input_dir, params.cellranger.fastq_pattern), flat:true )
+       .ifEmpty { exit 1, "Cannot find any reads matching: ${params.input_dir}\n" }
 
        //strip the fastq names from the pairs input channel if no sample sheet is provided, split at _S
        stripped = fastqs
@@ -40,10 +36,14 @@ workflow scRNA {
                 tuple[0] = tuple[0].split('_S')[0]
                 }
                 .unique()
+
+       fastqc_input = fastqs
           
-       cellranger_count(stripped, params.input_dir, params.output_dir, params.ref, params.expected_cells, use_introns())
+       cellranger_count(stripped, params.input_dir, params.output_dir, params.cellranger.ref,
+       params.cellranger.expected_cells, use_introns(params.cellranger.include_introns))
 
        scrublet_input = cellranger_count.out.cellranger_filtered_matrix
+
 
 }
      } else if ( params.method == "split-pipe" ) {
@@ -64,22 +64,17 @@ workflow scRNA {
        merge_fastqs(params.input_dir, params.output_dir, samples_sublibraries)
        split_pipe_input = merge_fastqs.out.sublibrary_read_pairs
 
-       fastqc(merge_fastqs.out.sublibrary_read_pairs, params.output_dir)
+       fastqc_input = merge_fastqs.out.sublibrary_read_pairs
  
        } else {
        println("Not merging FASTQ files. Detecting sublibrary file pairs using the input directory and FASTQ pattern.")
        samples_sublibraries = Channel.fromFilePairs( params.input_dir + '/' + params.fastq_pattern, flat: true )
        .ifEmpty { exit 1, "Cannot find any reads matching: ${params.input_dir}\n" }
-       fastqc(samples_sublibraries, params.output_dir)
+       fastqc_input = samples_sublibraries
        split_pipe_input = samples_sublibraries
        }
        
        splitpipe_all(split_pipe_input, params.kit, params.ref, params.sample_list, params.output_dir)
-
-       if ( params.multiqc ) {
-       multiqc(fastqc.out.fastqc_outputs.collect(), params.output_dir, params.multiqc_title)
-
-       }
 
        if ( params.combine ) {
 
@@ -100,10 +95,22 @@ workflow scRNA {
 
      }
 
+}
 
-     scrublet(scrublet_input, params.output_dir, params.expected_rate, params.min_counts, params.min_cells,
-       params.gene_variability, params.princ_components, toTranspose(params.transpose))
+fastqc(fastqc_input, params.output_dir)
 
+if ( params.multiqc ) {
+       multiqc(fastqc.out.fastqc_outputs.collect(), params.output_dir, params.multiqc_title)
+
+       }
+
+scrublet(scrublet_input, params.output_dir, params.expected_rate, params.min_counts, params.min_cells,
+     params.gene_variability, params.princ_components, toTranspose(params.transpose))
+
+
+}  else {
+     println("Error: incorrect scRNA method specified. Please select one of cellranger or split-pipe.")
+     System.exit(1)
 }
 
 }
