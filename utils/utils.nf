@@ -20,7 +20,7 @@ def concat_pattern_dir(dir, pattern) { dir + '/' + pattern }
 def use_introns (intron_param) { 
        if ( intron_param ) {
 
-       introns = '--include-introns'
+       introns = '--include-introns true'
        } else {
        introns = ''
 }
