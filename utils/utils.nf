@@ -22,7 +22,7 @@ def use_introns (intron_param) {
 
        introns = '--include-introns true'
        } else {
-       introns = ''
+       introns = '--include-introns false'
 }
        introns
 
