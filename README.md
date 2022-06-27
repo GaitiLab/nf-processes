@@ -12,7 +12,7 @@ or
 ```
 curl -s https://get.nextflow.io | bash
 ```
-More specific installation instructions for Nextflow can be found [here](https://www.nextflow.io/docs/latest/getstarted.html). 
+More specific installation instructions for Nextflow can be found [here](https://www.nextflow.io/docs/latest/getstarted.html).
 
 ## Pipeline installation & Updating
 
@@ -34,15 +34,23 @@ Modules can be run using the following generic command:
 
 ### Workflows
 
-Workflows represent more complex and linked series of processes. Currently there is one workflow in development for split-pipe ParseBio, which in addition to the core split-pipe commands, also runs FastQC, MultiQC, and scrublet. 
+Workflows represent more complex and linked series of processes. Currently there is one workflow in development for split-pipe ParseBio, which in addition to the core split-pipe commands, also runs FastQC, MultiQC, and scrublet.
 
-## Running the split-pipe pipeline for ParseBio data
+## Ruynning scRNA processing pipelines
+
+Within the **modules** directory are two basic pipelines for processing scRNA-seq data from raw FASTQ files: 
+
+* ParseBio data (to be processed using split-pipe)
+* 10X Genomics data (to be processed using cellranger)
+
+Below are the links to the specific user documentation for each type of scRNA-seq data. 
+
+### Running the split-pipe pipeline for ParseBio data
 
 [parseBio split-pipe analysis pipeline](https://support.parsebiosciences.com/hc/en-us/categories/360004765711-Computational-Support) \
-
 [split-pipe instructions using Nextflow](modules/split-pipe/README.md)
 
-## Running the cellranger count pipeline for 10x Genomics scRNA data
+### Running the cellranger count pipeline for 10x Genomics scRNA data
 
 [cellranger count pipeline for 10X scRNA](https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/what-is-cell-ranger) \
 [cellranger instructions using Nextflow](modules/cellranger/README.md)

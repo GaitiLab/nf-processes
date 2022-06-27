@@ -133,8 +133,46 @@ and the file can be submitted using `sbatch`.
 
 ## Outputs
 
-The basic structure of the output directory will be as follows, with a directory named splitpipe containing the 3 sub-directories listed below: 
+The basic structure of the output directory will be as follows, with a directory named cellranger containing the 3 sub-directories listed below: 
 
 ```
-└── cellranger
+cellranger_count/
+├── 331R-11
+│   ├── 331R-11.mri.tgz
+│   ├── _cmdline
+│   ├── _filelist
+│   ├── _finalstate
+│   ├── _invocation
+│   ├── _jobmode
+│   ├── _log
+│   ├── _mrosource
+│   ├── outs
+│   ├── _perf
+│   ├── SC_RNA_COUNTER_CS
+│   ├── _sitecheck
+│   ├── _tags
+│   ├── _timestamp
+│   ├── _uuid
+│   ├── _vdrkill
+│   └── _versions
+└── 610-7
+    ├── 610-7.mri.tgz
+    ├── _cmdline
+    ├── _filelist
+    ├── _finalstate
+    ├── _invocation
+    ├── _jobmode
+    ├── _log
+    ├── _mrosource
+    ├── outs
+    ├── _perf
+    ├── SC_RNA_COUNTER_CS
+    ├── _sitecheck
+    ├── _tags
+    ├── _timestamp
+    ├── _uuid
+    ├── _vdrkill
+    └── _versions
 ```
+
+In this example there are two samples in the cellranger_count sub-directory: 331R-11 and 610-7. A sub-directory for each sample, by name, will be created in the output directory.
