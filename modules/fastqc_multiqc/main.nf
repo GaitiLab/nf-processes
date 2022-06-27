@@ -66,8 +66,8 @@ workflow qc_workflow {
 
        main:
 
-       fastqs = Channel.fromFilePairs( concat_pattern_dir(params.input_dir, params.fastq_pattern), flat:true )
-       .ifEmpty { exit 1, "Cannot find any reads matching: ${params.fastq_pattern} in ${params.input_dir}\n" }
+       fastqs = Channel.fromFilePairs( concat_pattern_dir(params.input_dir, params.cellranger.fastq_pattern), flat:true )
+       .ifEmpty { exit 1, "Cannot find any reads matching: ${params.input_dir}\n" }
 
        fastqc(fastqs, params.output_dir)
  

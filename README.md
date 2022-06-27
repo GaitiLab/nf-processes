@@ -36,5 +36,7 @@ Modules can be run using the following generic command:
 
 Workflows represent more complex and linked series of processes. Currently there is one workflow in development for split-pipe ParseBio, which in addition to the core split-pipe commands, also runs FastQC, MultiQC, and scrublet. 
 
+## Running the split-pipe pipeline for ParseBio data
 
+[split-pipe Nextflow instructions](modules/split-pipe/README.md)
 
