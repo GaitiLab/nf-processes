@@ -38,5 +38,11 @@ Workflows represent more complex and linked series of processes. Currently there
 
 ## Running the split-pipe pipeline for ParseBio data
 
-[split-pipe Nextflow instructions](modules/split-pipe/README.md)
+[parseBio split-pipe analysis pipeline](https://support.parsebiosciences.com/hc/en-us/categories/360004765711-Computational-Support) \
 
+[split-pipe instructions using Nextflow](modules/split-pipe/README.md)
+
+## Running the cellranger count pipeline for 10x Genomics scRNA data
+
+[cellranger count pipeline for 10X scRNA](https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/what-is-cell-ranger) \
+[cellranger instructions using Nextflow](modules/cellranger/README.md)
