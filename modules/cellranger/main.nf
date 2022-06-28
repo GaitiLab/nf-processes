@@ -12,8 +12,7 @@ process cellranger_count {
        publishDir path: "${output_dir}/cellranger_count/", mode: "copy"
 
        input: 
-       val sample_name
-       path input_dir
+       tuple val(sample_name), path(input_dir)
        path output_dir
        val ref
        val expected_cells
@@ -49,18 +48,26 @@ workflow cellranger {
        .ifEmpty { exit 1, "Cannot find any reads matching: ${params.input_dir}\n" }
 
        //strip the fastq names from the pairs input channel if no sample sheet is provided, split at _S
-       stripped = fastqs
+       // combine the sample names with the input directory
+       samples_with_path = fastqs
                 .flatMap { tuple ->
                 tuple[0] = tuple[0].split('_S')[0]
                 }
                 .unique()
-          
-       cellranger_count(stripped, params.input_dir, params.output_dir, params.cellranger.ref,
-       params.cellranger.expected_cells, use_introns(params.cellranger.include_introns))
+                .combine(Channel.fromPath(params.input_dir))
+       
 
+} else {
+       // if using a sample sheet, create a channel identical to above
+       // requires two columns: one with the sample name, other with the path to the fastq files
+       samples_with_path = Channel.fromPath( params.cellranger.sample_sheet )
+       .ifEmpty { exit 1, "Cannot find any sample sheet at: ${params.cellranger.sample_sheet}\n" }
+       .splitCsv(header:true)
+       .map{ row-> tuple(row.sample_name, file(row.sample_path)) }  
 }
                
-
+       cellranger_count(samples_with_path, params.output_dir, params.cellranger.ref,
+       params.cellranger.expected_cells, use_introns(params.cellranger.include_introns))   
 }
 
 
