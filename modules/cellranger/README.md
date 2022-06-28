@@ -32,9 +32,9 @@ git pull
 
 ## Inputs
 
-### Input directory for FASTQ files
+### Sample Input Option #1: Directory
 
-Running cellranger in Nextflow assumes an input directory of FASTQ files that, for each sample, contains 4 FASTQS:
+zthere are two possibilities for specifying the input FASTQ files required to run cellranger count. The first allows for specifying a directory that contains 4 FASTQS for every sample, with multiple samples permitted:
 
 * Index 1, as {sample}_I1_001.fastq.gz
 * Index 2, as {sample}_I2_001.fastq.gz
@@ -57,8 +57,19 @@ When running cellranger in Nextflow, the sample name will be recognized automati
 ```
 
 The sample name will be derived as 144556 (the filenames are split at _S). \
-**Note**: FASTQ files that correspond to the same sample, but across multiple lanes, will be collapsed together. In the example above, 144556 is apread out across 2 lanes, and the resulting analysis will combine the FASTQ files for these 2 lanes into one output directory automatically by cellranger, as long as the portion of the FASTQ names before the lane assignment (such as 144556_S52_) is the same. 
- 
+**Note**: FASTQ files that correspond to the same sample, but across multiple lanes, will be collapsed together. In the example above, 144556 is apread out across 2 lanes, and the resulting analysis will combine the FASTQ files for these 2 lanes into one output directory automatically by cellranger, as long as the portion of the FASTQ names before the lane assignment (such as 144556_S52_) is the same.
+
+### Sample Input Option #2: Sample sheet
+
+The second option for specifying input FASTQs is to use a sample sheet with two columns named **sample_name** and **sample_path**, as seen below: 
+
+```
+sample_name,sample_path
+610-7,/cluster/projects/gaitigroup/ParseBio_data/220215_A00827_0509_BHVT53DSX2_NU210019/fastq/
+331R-11,/cluster/projects/gaitigroup/ParseBio_data/220215_A00827_0509_BHVT53DSX2_NU210019/fastq/
+```
+
+This permits the running of samples in different directories. Note that these directories must contain the 4 required FASTQ files as described above with the same naming conventions. 
 
 ## Configuration
 
@@ -82,10 +93,10 @@ cellranger.expected_cells = 3000
 
 ***input_dir***: The absolute path of the input directory where the raw FASTQ files are held. All FASTQ files should be contained in this directory, and not within any sub-directories. \
 ***output_dir***: The absolute path of the output directory where the results are to be written. The module will create the output directory if it does not exist. \
-***cellranger.fastq_pattern***: A glob pattern that is combined with the input directory to detect pairs of FASTQ files for input. This pattern is used to get the final sample names. 
-***cellranger.ref***: A compatible RNA-based reference for running cellranger. The HPC Bioinformatics core is able to provide the path of various reference genomes at `/cluster/tools/data/commondata/cellranger/`. 
-***cellranger.sample_sheet***: An alternative way of specifying the input files and sample names using a sheet. Currently not supported.
-***cellranger.include_introns***: Whether or not cellranger should evaluate reads that align to introns or not. Unless specifically stated, this parameter should be set to true.
+***cellranger.fastq_pattern***: A glob pattern that is combined with the input directory to detect pairs of FASTQ files for input. This pattern is used to get the final sample names. \
+***cellranger.ref***: A compatible RNA-based reference for running cellranger. The HPC Bioinformatics core is able to provide the path of various reference genomes at `/cluster/tools/data/commondata/cellranger/`. \
+***cellranger.sample_sheet***: An alternative way of specifying the input files and sample names using a sheet. Overrides the input_dir variable if both are specified. \
+***cellranger.include_introns***: Whether or not cellranger should evaluate reads that align to introns or not. Unless specifically stated, this parameter should be set to true. \
 ***cellranger.expected_cells***: The expected number of cells to retain from the experiment. Typical values are set between 2000-3000.
 
 ## Profiles
@@ -127,7 +138,7 @@ The command above can be submitted through a slurm job with the following code p
 #SBATCH -o %x-%j.out
 ```
 
-and the file can be submitted using `sbatch`. 
+and the file can be submitted using `sbatch`.
 
 
 
