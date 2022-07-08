@@ -38,5 +38,12 @@ def toTranspose(transpose) {
      }
 
 
-
+def addRecursiveSearch(arg) {
+     if (arg) {
+          recursive = "+"
+     } else {
+          recursive = ""
+     }
+     recursive
+}
 

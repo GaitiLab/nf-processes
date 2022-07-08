@@ -3,7 +3,7 @@
 nextflow.enable.dsl=2
 
 
-include { use_introns; concat_pattern_dir } from "../../utils/utils.nf"
+include { use_introns; concat_pattern_dir; addRecursiveSearch } from "../../utils/utils.nf"
 
 process cellranger_count {
 
@@ -44,7 +44,7 @@ workflow cellranger {
 
        if ( params.cellranger.sample_sheet == '' ) {
 
-       fastqs = Channel.fromFilePairs( concat_pattern_dir(params.input_dir, params.cellranger.fastq_pattern) )
+       fastqs = Channel.fromFilePairs( params.input_dir + '/' + addRecursiveSearch(params.recursive_search) + params.cellranger.fastq_pattern )
        .ifEmpty { exit 1, "Cannot find any reads matching: ${params.input_dir}\n" }
 
        //strip the fastq names from the pairs input channel if no sample sheet is provided, split at _S

@@ -2,6 +2,8 @@
 
 nextflow.enable.dsl=2
 
+include { addRecursiveSearch } from "../../utils/utils.nf"
+
 
 process merge_fastqs {
 
@@ -104,7 +106,7 @@ workflow pb_splitpipe {
        
        } else {
        println("Not merging FASTQ files. Detecting sublibrary file pairs using the input directory and FASTQ pattern.")
-       samples_sublibraries = Channel.fromFilePairs( params.input_dir + '/' + params.fastq_pattern, flat: true )
+       samples_sublibraries = Channel.fromFilePairs( params.input_dir + '/' + addRecursiveSearch(params.recursive_search) + params.fastq_pattern, flat: true )
        splitpipe_all(samples_sublibraries, params.kit, params.ref, params.sample_list, params.output_dir)
 
        }
