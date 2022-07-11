@@ -50,7 +50,7 @@ workflow cellranger {
        //strip the fastq names from the pairs input channel if no sample sheet is provided, split at _S
        // combine the sample names with the input directory
        samples_with_path = fastqs
-                .flatMap { tuple ->
+                .map { tuple ->
                 tuple[0] = tuple[0].split(params.cellranger.sample_name_split)[0]
                 }
                 .unique()

@@ -13,7 +13,7 @@ process fastqc {
      publishDir path: "${output_dir}/fastqc/", mode: "copy"
    
      input:
-     tuple val(name), path(read_1), path(read_2)
+     tuple val(name), path(reads)
      path output_dir
      
      output: 
@@ -26,8 +26,7 @@ process fastqc {
      """
      fastqc --outdir . \
      -t ${task.cpus} \
-     ${read_1} \
-     ${read_2}
+     ${reads}
      """
 
 }
@@ -66,10 +65,13 @@ workflow qc_workflow {
 
        main:
 
-       fastqs = Channel.fromFilePairs( concat_pattern_dir(params.input_dir, params.cellranger.fastq_pattern), flat:true )
+        fastqs = Channel.fromFilePairs( params.input_dir + '/' + addRecursiveSearch(params.recursive_search) + params.cellranger.fastq_pattern )
        .ifEmpty { exit 1, "Cannot find any reads matching: ${params.input_dir}\n" }
 
-       fastqc(fastqs, params.output_dir)
+       // imitate a flat channel with a placeholder name and collected fastq paths
+       files = Channel.of("fastq_files").combine(fastqs.map( tuple -> tuple[1]).flatten().collect()).map{ tuple -> [tuple[0], tuple.tail()]}
+
+       fastqc(files, params.output_dir)
  
        if ( params.multiqc ) {
 
