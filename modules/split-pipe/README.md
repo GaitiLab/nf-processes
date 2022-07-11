@@ -104,6 +104,7 @@ params {
 
 input_dir = './fastq/'
 output_dir = './results/'
+recursive_search - false
 merge_fastqs = true
 ref = ''
 sample_list = ''
@@ -116,9 +117,10 @@ fastq_pattern = '*_R{1,2}*.fastq.gz'
 }
 ```
 
-***input_dir***: The absolute path of the input directory where the raw FASTQ files are held. All FASTQ files should be contained in this directory, and not within any sub-directories. \
+***input_dir***: The absolute path of the input directory where the raw FASTQ files are held. All FASTQ files should be contained in this directory if **merge_fastqs** is set to true. Also compatible with **recursive_search**. 
+***recursive_search***: Whether or not the FASTQ file search should be recursive for the input directory. If set to yes, the runner will search recursively for any paired FASTQ files in the main durectory and all sub-directories specified by ***input_dir**. ONly works if **merge_fastqs** is set to false. Default is false. \
 ***output_dir***: The absolute path of the output directory where the results are to be written. The module will create the output directory if it does not exist. \
-***merge_fastqs***: Setting to false will not concatenate the fastq files, and each pair of fastq files in the input directory will be treated as a sub-library. Default is TRUE. **Only to be used** if the FASTQ files were merged previously, or if only one lane per sublibrary was sequenced. \
+***merge_fastqs***: Setting to false will not concatenate the fastq files, and each pair of fastq files in the input directory will be treated as a sub-library. **IMPORTANT**: not compatible with recursive_search. If FASTQ files are to be concatenated by lane, they must all be in the same directory. Default is TRUE. **Only to be used** if the FASTQ files were NOT merged previously, or if only one lane per sublibrary was sequenced. \
 ***ref***: The absolute path to a suitable reference genome. \
 ***sample_list***: The absolute path to a list of samples as shown above. \
 ***kit***: The type of kit used by ParseBio. This will correspond to the number of samples processed. The options currently available are WT_mini, WT, or WT_mega. \
