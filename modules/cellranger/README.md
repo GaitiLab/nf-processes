@@ -80,8 +80,10 @@ params {
 
 input_dir = '.input/'
 output_dir = './results'
+resursive_search = false
 
 cellranger.fastq_pattern = '*_R{1,2}*.fastq.gz'
+cellranger.sample_name_split = '_S'
 cellranger.ref = ''
 cellranger.sample_sheet = ''
 cellranger.include_introns = true
@@ -91,9 +93,11 @@ cellranger.expected_cells = 3000
 }
 ```
 
-***input_dir***: The absolute path of the input directory where the raw FASTQ files are held. All FASTQ files should be contained in this directory, and not within any sub-directories. \
+***input_dir***: The absolute path of the input directory where the raw FASTQ files are held. All FASTQ files should be contained in this directory unless **recursive_search** is set to true. \
+***recursive_search***: Whether or not the FASTQ file search should be recursive for the input directory. If set to yes, the runner will search recursively for any paired FASTQ files in the main durectory and all sub-directories specified by ***input_dir**. Default is false. \
 ***output_dir***: The absolute path of the output directory where the results are to be written. The module will create the output directory if it does not exist. \
 ***cellranger.fastq_pattern***: A glob pattern that is combined with the input directory to detect pairs of FASTQ files for input. This pattern is used to get the final sample names. \
+***cellranger.sample_name_split***: The FASTQ name pattern at which the split should occur to derive the unique sample name. The default is set to **_S**, which for Illumina sequencing corresponds to the beginning of the index name. Splitting at the index name makes the unique name compatible with cellranger. \
 ***cellranger.ref***: A compatible RNA-based reference for running cellranger. The HPC Bioinformatics core is able to provide the path of various reference genomes at `/cluster/tools/data/commondata/cellranger/`. \
 ***cellranger.sample_sheet***: An alternative way of specifying the input files and sample names using a sheet. Overrides the input_dir variable if both are specified. \
 ***cellranger.include_introns***: Whether or not cellranger should evaluate reads that align to introns or not. Unless specifically stated, this parameter should be set to true. \
