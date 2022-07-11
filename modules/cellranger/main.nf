@@ -51,7 +51,7 @@ workflow cellranger {
        // combine the sample names with the input directory
        samples_with_path = fastqs
                 .flatMap { tuple ->
-                tuple[0] = tuple[0].split('_S')[0]
+                tuple[0] = tuple[0].split(params.cellranger.sample_name_split)[0]
                 }
                 .unique()
                 .combine(Channel.fromPath(params.input_dir))

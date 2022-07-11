@@ -40,7 +40,7 @@ def toTranspose(transpose) {
 
 def addRecursiveSearch(arg) {
      if (arg) {
-          recursive = "+"
+          recursive = "*"
      } else {
           recursive = ""
      }
