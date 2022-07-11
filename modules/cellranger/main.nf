@@ -42,7 +42,7 @@ workflow cellranger {
        main:
 
 
-       if ( params.cellranger.sample_sheet == '' ) {
+       if ( ! params.cellranger.sample_sheet ) {
 
        fastqs = Channel.fromFilePairs( params.input_dir + '/' + addRecursiveSearch(params.recursive_search) + params.cellranger.fastq_pattern )
        .ifEmpty { exit 1, "Cannot find any reads matching: ${params.input_dir}\n" }
