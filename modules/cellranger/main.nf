@@ -67,7 +67,13 @@ workflow cellranger {
 }
                
        cellranger_count(samples_with_path, params.output_dir, params.cellranger.ref,
-       params.cellranger.expected_cells, use_introns(params.cellranger.include_introns))   
+       params.cellranger.expected_cells, use_introns(params.cellranger.include_introns))  
+
+       files_out = samples_with_path 
+
+       emit: 
+       fastq_files = fastqs
+       matrices = cellranger_count.out.cellranger_filtered_matrix
 }
 
 
