@@ -12,7 +12,7 @@ include { merge_fastqs; splitpipe_all; splitpipe_combine } from "../../modules/s
 
 include { scrublet } from "../../modules/scrublet/main.nf"
 
-include { spaceSplit; makeCombinedMatrixPath; concat_pattern_dir; use_introns; toTranspose } from "../../utils/utils.nf"
+include { spaceSplit; makeCombinedMatrixPath; concat_pattern_dir; use_introns; toTranspose; addRecursiveSearch } from "../../utils/utils.nf"
 
 include { cellranger_count } from "../../modules/cellranger/main.nf"
 
@@ -25,21 +25,24 @@ workflow scRNA {
 
      if (params.method == "cellranger") {
 
-     if ( params.cellranger.sample_sheet == '' ) {
+     if ( ! params.cellranger.sample_sheet ) {
 
-       fastqs = Channel.fromFilePairs( concat_pattern_dir(params.input_dir, params.cellranger.fastq_pattern), flat:true )
+       
+       fastqs = Channel.fromFilePairs( params.input_dir + '/' + addRecursiveSearch(params.recursive_search) + params.cellranger.fastq_pattern )
        .ifEmpty { exit 1, "Cannot find any reads matching: ${params.input_dir}\n" }
 
        //strip the fastq names from the pairs input channel if no sample sheet is provided, split at _S
-       stripped = fastqs
-                .flatMap { tuple ->
-                tuple[0] = tuple[0].split('_S')[0]
+       // combine the sample names with the input directory
+       samples_with_path = fastqs
+                .map { tuple ->
+                tuple[0] = tuple[0].split(params.cellranger.sample_name_split)[0]
                 }
                 .unique()
+                .combine(Channel.fromPath(params.input_dir))
 
-       fastqc_input = fastqs
+       fastqc_input = Channel.of("fastq_files").combine(fastqs.map( tuple -> tuple[1]).flatten().collect()).map{ tuple -> [tuple[0], tuple.tail()]}
           
-       cellranger_count(stripped, params.input_dir, params.output_dir, params.cellranger.ref,
+       cellranger_count(samples_with_path, params.input_dir, params.output_dir, params.cellranger.ref,
        params.cellranger.expected_cells, use_introns(params.cellranger.include_introns))
 
        scrublet_input = cellranger_count.out.cellranger_filtered_matrix
@@ -64,13 +67,15 @@ workflow scRNA {
        merge_fastqs(params.input_dir, params.output_dir, samples_sublibraries)
        split_pipe_input = merge_fastqs.out.sublibrary_read_pairs
 
-       fastqc_input = merge_fastqs.out.sublibrary_read_pairs
+       fastqc_input = Channel.of("fastq_files").combine(merge_fastqs.out.sublibrary_read_pairs.map( tuple -> 
+       tuple[1]).flatten().collect()).map{ tuple -> [tuple[0], tuple.tail()]}
  
        } else {
        println("Not merging FASTQ files. Detecting sublibrary file pairs using the input directory and FASTQ pattern.")
-       samples_sublibraries = Channel.fromFilePairs( params.input_dir + '/' + params.fastq_pattern, flat: true )
+       samples_sublibraries = Channel.fromFilePairs( params.input_dir + '/' + addRecursiveSearch(params.recursive_search) + params.fastq_pattern, flat: true )
        .ifEmpty { exit 1, "Cannot find any reads matching: ${params.input_dir}\n" }
-       fastqc_input = samples_sublibraries
+
+       fastqc_input = Channel.of("fastq_files").combine(samples_sublibraries.map( tuple -> tuple[1]).flatten().collect()).map{ tuple -> [tuple[0], tuple.tail()]}
        split_pipe_input = samples_sublibraries
        }
        

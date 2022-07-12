@@ -3,7 +3,7 @@
 nextflow.enable.dsl=2
 
 
-include {concat_pattern_dir} from "../../utils/utils.nf"
+include {concat_pattern_dir; addRecursiveSearch} from "../../utils/utils.nf"
 
 
 process fastqc {
@@ -43,8 +43,6 @@ process multiqc {
      path output_dir
      val multiqc_title
 
-
-
      output: 
      path('multiqc_report.html')
      path('multiqc_report_data/multiqc_general_stats.txt')
@@ -65,8 +63,8 @@ workflow qc_workflow {
 
        main:
 
-        fastqs = Channel.fromFilePairs( params.input_dir + '/' + addRecursiveSearch(params.recursive_search) + params.cellranger.fastq_pattern )
-       .ifEmpty { exit 1, "Cannot find any reads matching: ${params.input_dir}\n" }
+        fastqs = Channel.fromFilePairs( params.input_dir + '/' + addRecursiveSearch(params.recursive_search) + params.fastq_pattern )
+        .ifEmpty { exit 1, "Cannot find any reads matching: ${params.input_dir} with recursive set to: ${params.recursive_search}\n" }
 
        // imitate a flat channel with a placeholder name and collected fastq paths
        files = Channel.of("fastq_files").combine(fastqs.map( tuple -> tuple[1]).flatten().collect()).map{ tuple -> [tuple[0], tuple.tail()]}
@@ -75,7 +73,7 @@ workflow qc_workflow {
  
        if ( params.multiqc ) {
 
-       multiqc(fastqc.out.fastqc_outputs.collect(), params.output_dir, params.multiqc.multiqc_title)
+       multiqc(fastqc.out.fastqc_outputs.collect(), params.output_dir, params.multiqc_title)
 
 }      
 

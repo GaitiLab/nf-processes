@@ -29,7 +29,7 @@ process merge_fastqs {
 
 process splitpipe_all {
 
-        label 'splitpipe'
+       label 'splitpipe'
 
        publishDir path: "${output_dir}/split_pipe/all/", mode: "copy"
 
