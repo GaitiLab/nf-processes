@@ -29,8 +29,9 @@ workflow scRNA {
 
      if (! params.cellranger.sample_sheet ) {
      
-     fastqc_input = Channel.of("fastq_files").combine(cellranger.out.fastq_files.map( 
-               tuple -> tuple.tail()).flatten()).collect().map{ tuple -> [tuple[0], tuple.tail()]}
+
+     fastqc_input = Channel.of("fastq_files").combine(cellranger.out.fastq_files.map( tuple -> tuple.tail()).flatten().collect()).
+     map{ tuple -> [tuple[0], tuple.tail()]}
 
      fastqc(fastqc_input, params.output_dir) 
      if ( params.multiqc ) {
@@ -38,10 +39,7 @@ workflow scRNA {
 
        }  
      }
-
-
-     scrublet(cellranger.out.matrices, params.output_dir, params.expected_rate, params.min_counts, params.min_cells,
-     params.gene_variability, params.princ_components, toTranspose(params.transpose))
+     scrublet_input = cellranger.out.matrices
 
 
      } else if ( params.method == "split-pipe" ) {
@@ -69,11 +67,12 @@ workflow scRNA {
       makeCombinedMatrixPath(j, i)] }
 
 
-     scrublet(scrublet_input, params.output_dir, params.expected_rate, params.min_counts, params.min_cells,
-     params.gene_variability, params.princ_components, toTranspose(params.transpose)) 
      }  
 
 }
+
+scrublet(scrublet_input, params.output_dir, params.expected_rate, params.min_counts, params.min_cells,
+     params.gene_variability, params.princ_components, toTranspose(params.transpose)) 
 
 
 }  else {
