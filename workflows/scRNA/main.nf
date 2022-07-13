@@ -26,11 +26,11 @@ workflow scRNA {
      if (params.method == "cellranger") {
 
      cellranger()
-     
+
      if (! params.cellranger.sample_sheet ) {
      
      fastqc_input = Channel.of("fastq_files").combine(cellranger.out.fastq_files.map( 
-               tuple -> tuple[1]).flatten().collect()).map{ tuple -> [tuple[0], tuple.tail()]}
+               tuple -> tuple.tail()).flatten()).collect().map{ tuple -> [tuple[0], tuple.tail()]}
 
      fastqc(fastqc_input, params.output_dir) 
      if ( params.multiqc ) {
@@ -49,8 +49,8 @@ workflow scRNA {
      pb_splitpipe()
 
 
-     fastqc_input = Channel.of("fastq_files").combine(pb_splitpipe.out.samples.map( 
-               tuple -> tuple[1]).flatten().collect()).map{ tuple -> [tuple[0], tuple.tail()]}
+     fastqc_input = Channel.of("fastq_files").combine(pb_splitpipe.out.samples.map( tuple -> tuple.tail()).flatten().collect()).
+     map{ tuple -> [tuple[0], tuple.tail()]}
 
      
      fastqc(fastqc_input, params.output_dir)
