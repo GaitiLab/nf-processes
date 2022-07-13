@@ -59,7 +59,12 @@ Below are the links to the specific user documentation for each type of scRNA-se
 
 ## Workflows
 
-Workflows represent more complex and linked series of processes. Currently there is one workflow in development for toggling between both ParseBio and `0X scRNA data. The workflow can be found in `workflows` and enables the following behaviour: 
+Workflows represent more complex and linked series of processes. Currently there is one workflow in development for toggling between both ParseBio and 10X scRNA data. The workflow can be found in `workflows` and enables the following behaviour: 
 
 * Specifying the type of input scRNA data with `--method` as either `split-pipe` or `cellranger`.
-* For either mode, the pipeline will generate count matrices from FASTQ files, run FastQC (and MultiQC optionally), and run scrublet on the filtered output countr matrices. 
+* For either mode, the pipeline will generate count matrices from FASTQ files, run FastQC (and MultiQC optionally), and run scrublet on the filtered output count matrices. 
+
+### Running combined/toggled scRNA processing pipelines from workflows
+
+**Currently under development**. 
+
