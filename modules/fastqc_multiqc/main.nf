@@ -3,7 +3,7 @@
 nextflow.enable.dsl=2
 
 
-include {concat_pattern_dir; addRecursiveSearch} from "../../utils/utils.nf"
+include {concat_pattern_dir; addRecursiveSearch; formatFASTQInputForFastQC } from "../../utils/utils.nf"
 
 
 process fastqc {
@@ -67,9 +67,9 @@ workflow qc_workflow {
         .ifEmpty { exit 1, "Cannot find any reads matching: ${params.input_dir} with recursive set to: ${params.recursive_search}\n" }
 
        // imitate a flat channel with a placeholder name and collected fastq paths
-       files = Channel.of("fastq_files").combine(fastqs.map( tuple -> tuple[1]).flatten().collect()).map{ tuple -> [tuple[0], tuple.tail()]}
+       files_for_fastqc = formatFASTQInputForFastQC(fastqs)
 
-       fastqc(files, params.output_dir)
+       fastqc(files_for_fastqc, params.output_dir)
  
        if ( params.multiqc ) {
 

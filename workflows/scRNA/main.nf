@@ -12,9 +12,16 @@ include { pb_splitpipe } from "../../modules/split-pipe/main.nf"
 
 include { scrublet } from "../../modules/scrublet/main.nf"
 
-include { spaceSplit; makeCombinedMatrixPath; concat_pattern_dir; use_introns; toTranspose; addRecursiveSearch } from "../../utils/utils.nf"
+include { spaceSplit; makeCombinedMatrixPath; concat_pattern_dir; use_introns; toTranspose; addRecursiveSearch;
+formatFASTQInputForFastQC } from "../../utils/utils.nf"
 
 include { cellranger } from "../../modules/cellranger/main.nf"
+
+
+/* scRNA workflow
+Toggle between running split-pipe or cellranger count on scRNA samples
+THe pipeline will create count matrices from FASTQ files, as well as
+run FastQC, multiQC (optional), and scrublet detection */
 
 
 workflow scRNA {
@@ -28,12 +35,12 @@ workflow scRNA {
      cellranger()
 
      if (! params.cellranger.sample_sheet ) {
+
+     fastqc_input = formatFASTQInputForFastQC(cellranger.out.fastq_files)
      
 
-     fastqc_input = Channel.of("fastq_files").combine(cellranger.out.fastq_files.map( tuple -> tuple.tail()).flatten().collect()).
-     map{ tuple -> [tuple[0], tuple.tail()]}.view()
-
      fastqc(fastqc_input, params.output_dir) 
+     
      if ( params.multiqc ) {
        multiqc(fastqc.out.fastqc_outputs.collect(), params.output_dir, params.multiqc_title)
 
@@ -47,9 +54,7 @@ workflow scRNA {
      pb_splitpipe()
 
 
-     fastqc_input = Channel.of("fastq_files").combine(pb_splitpipe.out.samples.map( tuple -> tuple.tail()).flatten().collect()).
-     map{ tuple -> [tuple[0], tuple.tail()]}
-
+     fastqc_input = formatFASTQInputForFastQC(pb_splitpipe.out.samples)
      
      fastqc(fastqc_input, params.output_dir)
      if ( params.multiqc ) {

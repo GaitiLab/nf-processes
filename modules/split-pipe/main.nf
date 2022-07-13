@@ -106,6 +106,8 @@ workflow pb_splitpipe {
        } else {
        println("Not merging FASTQ files. Detecting sublibrary file pairs using the input directory and FASTQ pattern.")
        samples_sublibraries = Channel.fromFilePairs( params.input_dir + '/' + addRecursiveSearch(params.recursive_search) + params.fastq_pattern, flat: true )
+       .ifEmpty { exit 1, "Cannot find any reads matching: ${params.input_dir} with recursive set to: ${params.recursive_search}\n" }
+       
        splitpipe_all(samples_sublibraries, params.kit, params.ref, params.sample_list, params.output_dir)
 
        fastqs_out = samples_sublibraries

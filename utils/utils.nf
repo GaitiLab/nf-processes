@@ -47,3 +47,16 @@ def addRecursiveSearch(arg) {
      recursive
 }
 
+
+/* create a channel from flat read pairs with a placeholder name and 
+collected fastq names from a glob pattern
+Steps: 
+     - get the tail of the input channel to get just FASTQ names
+     - flatten and collect all from the input channel
+     - map into new channel with a placeholder name*/
+
+def formatFASTQInputForFastQC(input_channel) {
+     Channel.of("fastq_files").combine(input_channel.map( tuple -> tuple.tail()).flatten().collect()).
+     map{ tuple -> [tuple[0], tuple.tail()]}
+}
+
