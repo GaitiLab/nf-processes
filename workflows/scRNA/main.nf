@@ -31,7 +31,7 @@ workflow scRNA {
      
 
      fastqc_input = Channel.of("fastq_files").combine(cellranger.out.fastq_files.map( tuple -> tuple.tail()).flatten().collect()).
-     map{ tuple -> [tuple[0], tuple.tail()]}
+     map{ tuple -> [tuple[0], tuple.tail()]}.view()
 
      fastqc(fastqc_input, params.output_dir) 
      if ( params.multiqc ) {
