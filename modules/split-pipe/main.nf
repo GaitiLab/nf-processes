@@ -29,7 +29,7 @@ process merge_fastqs {
 
 process splitpipe_all {
 
-        label 'splitpipe'
+       label 'splitpipe'
 
        publishDir path: "${output_dir}/split_pipe/all/", mode: "copy"
 
@@ -85,17 +85,14 @@ process splitpipe_combine {
 
 workflow pb_splitpipe {
 
-       take:
-       sub_libraries
-
        main:
        
        if ( params.merge_fastqs ) {
 
-       if ( sub_libraries instanceof List ) {
-       samples_sublibraries = Channel.fromList(sub_libraries)
-       } else if ( sub_libraries.contains('.txt') & sub_libraries instanceof String) {
-       samples_sublibraries = Channel.fromList(file(sub_libraries).readLines())
+       if ( params.sublibrary instanceof List ) {
+       samples_sublibraries = Channel.fromList(params.sublibrary)
+       } else if ( params.sublibrary.contains('.txt') & params.sublibrary instanceof String) {
+       samples_sublibraries = Channel.fromList(file(params.sublibrary).readLines())
        } else {
        println("If merging FASTQs, sublibraries must be either a list of strings of a .txt file with one sublibrary per line.")
        System.exit(1)
@@ -103,17 +100,27 @@ workflow pb_splitpipe {
        
        merge_fastqs(params.input_dir, params.output_dir, samples_sublibraries)
        splitpipe_all(merge_fastqs.out.sublibrary_read_pairs, params.kit, params.ref, params.sample_list, params.output_dir)
+
+       fastqs_out = merge_fastqs.out.sublibrary_read_pairs
        
        } else {
        println("Not merging FASTQ files. Detecting sublibrary file pairs using the input directory and FASTQ pattern.")
        samples_sublibraries = Channel.fromFilePairs( params.input_dir + '/' + addRecursiveSearch(params.recursive_search) + params.fastq_pattern, flat: true )
+       .ifEmpty { exit 1, "Cannot find any reads matching: ${params.input_dir} with recursive set to: ${params.recursive_search}\n" }
+       
        splitpipe_all(samples_sublibraries, params.kit, params.ref, params.sample_list, params.output_dir)
+
+       fastqs_out = samples_sublibraries
 
        }
        if ( params.combine ) {
 
        splitpipe_combine(splitpipe_all.out.splitpipe_all_dir.collect(), params.output_dir)
 }
+
+       emit: 
+       samples = fastqs_out
+       paths = splitpipe_combine.out.splitpipe_combined_by_sample
       
 }
 
@@ -121,6 +128,6 @@ workflow {
 
      main: 
 
-     pb_splitpipe(params.sublibrary)
+     pb_splitpipe()
 
 }

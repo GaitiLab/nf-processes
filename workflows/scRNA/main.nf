@@ -8,13 +8,20 @@ import java.nio.file.Paths
 
 include { fastqc; multiqc; } from "../../modules/fastqc_multiqc/main.nf"
 
-include { merge_fastqs; splitpipe_all; splitpipe_combine } from "../../modules/split-pipe/main.nf"
+include { pb_splitpipe } from "../../modules/split-pipe/main.nf"
 
 include { scrublet } from "../../modules/scrublet/main.nf"
 
-include { spaceSplit; makeCombinedMatrixPath; concat_pattern_dir; use_introns; toTranspose } from "../../utils/utils.nf"
+include { spaceSplit; makeCombinedMatrixPath; concat_pattern_dir; use_introns; toTranspose; addRecursiveSearch;
+formatFASTQInputForFastQC } from "../../utils/utils.nf"
 
-include { cellranger_count } from "../../modules/cellranger/main.nf"
+include { cellranger } from "../../modules/cellranger/main.nf"
+
+
+/* scRNA workflow
+Toggle between running split-pipe or cellranger count on scRNA samples
+THe pipeline will create count matrices from FASTQ files, as well as
+run FastQC, multiQC (optional), and scrublet detection */
 
 
 workflow scRNA {
@@ -25,87 +32,52 @@ workflow scRNA {
 
      if (params.method == "cellranger") {
 
-     if ( params.cellranger.sample_sheet == '' ) {
+     cellranger()
 
-       fastqs = Channel.fromFilePairs( concat_pattern_dir(params.input_dir, params.cellranger.fastq_pattern), flat:true )
-       .ifEmpty { exit 1, "Cannot find any reads matching: ${params.input_dir}\n" }
+     if (! params.cellranger.sample_sheet ) {
 
-       //strip the fastq names from the pairs input channel if no sample sheet is provided, split at _S
-       stripped = fastqs
-                .flatMap { tuple ->
-                tuple[0] = tuple[0].split('_S')[0]
-                }
-                .unique()
+     fastqc_input = formatFASTQInputForFastQC(cellranger.out.fastq_files)
+     
 
-       fastqc_input = fastqs
-          
-       cellranger_count(stripped, params.input_dir, params.output_dir, params.cellranger.ref,
-       params.cellranger.expected_cells, use_introns(params.cellranger.include_introns))
+     fastqc(fastqc_input, params.output_dir) 
+     
+     if ( params.multiqc ) {
+       multiqc(fastqc.out.fastqc_outputs.collect(), params.output_dir, params.multiqc_title)
 
-       scrublet_input = cellranger_count.out.cellranger_filtered_matrix
+       }  
+     }
+     scrublet_input = cellranger.out.matrices
 
 
-}
      } else if ( params.method == "split-pipe" ) {
 
-     if ( params.merge_fastqs ) {
-
-     if ( sub_libraries instanceof List ) {
-       samples_sublibraries = Channel.fromList(sub_libraries)
-       .ifEmpty { exit 1, "Cannot find any sample names in : ${sublibraries}\n" }
-       } else if ( sub_libraries.contains('.txt') & sub_libraries instanceof String) {
-       samples_sublibraries = Channel.fromList(file(sub_libraries).readLines())
-       .ifEmpty { exit 1, "Cannot find any sample names in : ${sub_libraries}\n" }
-       } else {
-       println("If merging FASTQs, sublibraries must be either a list of strings or a .txt file with one sublibrary per line.")
-       System.exit(1)
-       }
-       
-       merge_fastqs(params.input_dir, params.output_dir, samples_sublibraries)
-       split_pipe_input = merge_fastqs.out.sublibrary_read_pairs
-
-       fastqc_input = merge_fastqs.out.sublibrary_read_pairs
- 
-       } else {
-       println("Not merging FASTQ files. Detecting sublibrary file pairs using the input directory and FASTQ pattern.")
-       samples_sublibraries = Channel.fromFilePairs( params.input_dir + '/' + params.fastq_pattern, flat: true )
-       .ifEmpty { exit 1, "Cannot find any reads matching: ${params.input_dir}\n" }
-       fastqc_input = samples_sublibraries
-       split_pipe_input = samples_sublibraries
-       }
-       
-       splitpipe_all(split_pipe_input, params.kit, params.ref, params.sample_list, params.output_dir)
-
-       if ( params.combine ) {
-
-     // create a channel with sample name and the path of the combined output matrix (cast as string)
-
-     sample_names = Channel.fromList(file(params.sample_list).readLines()).map { i -> spaceSplit(i)[0] }
-     .ifEmpty { exit 1, "Could not parse sample names from : ${params.sample_list}\n" }
+     pb_splitpipe()
 
 
-     splitpipe_combine(splitpipe_all.out.splitpipe_all_dir.collect(), params.output_dir)
+     fastqc_input = formatFASTQInputForFastQC(pb_splitpipe.out.samples)
+     
+     fastqc(fastqc_input, params.output_dir)
+     if ( params.multiqc ) {
+       multiqc(fastqc.out.fastqc_outputs.collect(), params.output_dir, params.multiqc_title)
 
-     combine_out = splitpipe_combine.out.splitpipe_combined_by_sample
+     }
+
+     if (params.combine) {
+     
+     combine_out = pb_splitpipe.out.paths
 
      sample_names = Channel.fromList(file(params.sample_list).readLines()).map { i -> spaceSplit(i)[0] }
 
      scrublet_input = sample_names.combine(combine_out).map { i, j -> [ i,
       makeCombinedMatrixPath(j, i)] }
 
-     }
+
+     }  
 
 }
 
-fastqc(fastqc_input, params.output_dir)
-
-if ( params.multiqc ) {
-       multiqc(fastqc.out.fastqc_outputs.collect(), params.output_dir, params.multiqc_title)
-
-       }
-
 scrublet(scrublet_input, params.output_dir, params.expected_rate, params.min_counts, params.min_cells,
-     params.gene_variability, params.princ_components, toTranspose(params.transpose))
+     params.gene_variability, params.princ_components, toTranspose(params.transpose)) 
 
 
 }  else {

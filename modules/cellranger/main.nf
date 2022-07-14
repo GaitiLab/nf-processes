@@ -45,12 +45,13 @@ workflow cellranger {
        if ( ! params.cellranger.sample_sheet ) {
 
        fastqs = Channel.fromFilePairs( params.input_dir + '/' + addRecursiveSearch(params.recursive_search) + params.cellranger.fastq_pattern )
-       .ifEmpty { exit 1, "Cannot find any reads matching: ${params.input_dir}\n" }
+       .ifEmpty { exit 1, "Cannot find any reads matching: ${params.input_dir} with recursive set to: ${params.recursive_search}\n" }
+
 
        //strip the fastq names from the pairs input channel if no sample sheet is provided, split at _S
        // combine the sample names with the input directory
        samples_with_path = fastqs
-                .flatMap { tuple ->
+                .map { tuple ->
                 tuple[0] = tuple[0].split(params.cellranger.sample_name_split)[0]
                 }
                 .unique()
@@ -67,7 +68,13 @@ workflow cellranger {
 }
                
        cellranger_count(samples_with_path, params.output_dir, params.cellranger.ref,
-       params.cellranger.expected_cells, use_introns(params.cellranger.include_introns))   
+       params.cellranger.expected_cells, use_introns(params.cellranger.include_introns))  
+
+       files_out = samples_with_path 
+
+       emit: 
+       fastq_files = fastqs
+       matrices = cellranger_count.out.cellranger_filtered_matrix
 }
 
 
