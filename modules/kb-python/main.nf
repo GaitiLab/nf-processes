@@ -2,7 +2,7 @@
 
 nextflow.enable.dsl=2
 
-include { addRecursiveSearch } from "../../utils/utils.nf"
+include { addRecursiveSearch; getKBPythonParity } from "../../utils/utils.nf"
 
 
 process kb_ref {
@@ -42,6 +42,8 @@ process kb_count {
      val chemistry
      val max_memory
      val threads
+     val parity
+     val strand
 
 
      output: 
@@ -58,7 +60,7 @@ process kb_count {
 
      script: 
      """
-     kb count -i ${transcriptome_index} -g ${gene_map} -x ${chemistry} -m ${max_memory} -t ${threads} ${reads} 
+     kb count -i ${transcriptome_index} -g ${gene_map} -x ${chemistry} -m ${max_memory} -t ${threads} --parity ${parity} --strand ${strand} ${reads}
      """
 
 }
@@ -89,7 +91,9 @@ workflow kb_python {
      println("Error: If a pre-generated gene map and transcriptome index are not supplied, \n then a transcript FASTA, primary FASTA, and reference gtf file need to be supplied.")
      System.exit(1)
 }
-      kb_count(fastqs, INDEX, GENE_MAP, params.chemistry, params.max_memory, params.threads)
+
+      kb_count(fastqs, INDEX, GENE_MAP, params.chemistry, params.max_memory, params.threads, getKBPythonParity(params.chemistry, params.read_parity),
+      params.strand)
 }
 
 
