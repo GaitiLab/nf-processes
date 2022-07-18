@@ -2,12 +2,14 @@
 
 nextflow.enable.dsl=2
 
+include { addRecursiveSearch; getKBPythonParity } from "../../utils/utils.nf"
+
 
 process kb_ref {
 
-     module = 'python3'
+     label 'kb_python'
    
-     publishDir path: "${params.output_dir}/ref/", mode: "copy"
+     publishDir path: "${params.output_dir}/kb_python_ref/", mode: "copy"
 
      input: 
      path cdna_fasta
@@ -29,14 +31,19 @@ process kb_ref {
 
 process kb_count {
 
+     label 'kb_python'
+
      publishDir path: "${params.output_dir}/kallisto_count/${name}/", mode: "copy"
-     
-     memory '4 GB'
    
      input:
      tuple val(name), path(reads)
      path transcriptome_index
      path gene_map
+     val chemistry
+     val max_memory
+     val threads
+     val parity
+     val strand
 
 
      output: 
@@ -53,35 +60,40 @@ process kb_count {
 
      script: 
      """
-     kb count -i ${transcriptome_index} -g ${gene_map} -x ${params.chemistry} -m ${params.max_memory} -t ${params.threads} ${reads} 
+     kb count -i ${transcriptome_index} -g ${gene_map} -x ${chemistry} -m ${max_memory} -t ${threads} --parity ${parity} --strand ${strand} ${reads}
      """
 
 }
 
 
-workflow kb_workflow {
+workflow kb_python {
 
        main:
 
-       fastqs = Channel.fromFilePairs( params.input_pattern )
-       .ifEmpty { exit 1, "Cannot find any reads matching: ${params.input_pattern}\n" }
+       fastqs = Channel.fromFilePairs( params.input_dir + '/' + addRecursiveSearch(params.recursive_search) + params.fastq_pattern )
+       .ifEmpty { exit 1, "Cannot find any reads matching: ${params.input_dir} with recursive set to: ${params.recursive_search}\n" }
 
-       if (!params.gene_map || !params.transcriptome_index) {
+       if (! params.gene_map || ! params.transcriptome_index) {
 
        kb_ref(params.transcript_fasta, params.primary_fasta, params.gtf)
 
        GENE_MAP = kb_ref.out.gene_map
        INDEX = kb_ref.out.index
 
-       } else {
+       } else if ( params.gene_map && params.transcriptome_index ) {
 
        GENE_MAP = params.gene_map
        INDEX = params.transcriptome_index
 
        
 
+} else {
+     println("Error: If a pre-generated gene map and transcriptome index are not supplied, \n then a transcript FASTA, primary FASTA, and reference gtf file need to be supplied.")
+     System.exit(1)
 }
-      kb_count(fastqs, INDEX, GENE_MAP)
+
+      kb_count(fastqs, INDEX, GENE_MAP, params.chemistry, params.max_memory, params.threads, getKBPythonParity(params.chemistry, params.read_parity),
+      params.strand)
 }
 
 
@@ -89,7 +101,7 @@ workflow {
 
      main: 
 
-      kb_workflow()
+      kb_python()
 
 }
 
