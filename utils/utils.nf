@@ -60,6 +60,8 @@ def formatFASTQInputForFastQC(input_channel) {
      map{ tuple -> [tuple[0], tuple.tail()]}
 }
 
+
+
 /* set the parity for kb-python
 only applies to bulk sequencing
 if the chemistry is set to BULK, set the parity to the param for read parity
@@ -73,5 +75,29 @@ def getKBPythonParity(chemistry, sequence_parity) {
           parity = ""
      }
      parity
+}
+
+def setSingleforKallisto(single_read) {
+     if (single_read) {
+          single = "--single"
+     } else {
+          single = ""
+     }
+     single
+}
+
+/* If kallisto is set to single read, add the fragment length and deviation arguments provided by the params
+if the mode is set paired, do not add (allow kallisto to calculate the length and deviation from the paired reads) 
+*/
+
+
+def addKallistoSingleParams(single_read, fragment_length, fragment_deviation) {
+
+     if (single_read) {
+          single_params = "-l ${fragment_length} -s ${fragment_deviation}"
+     } else {
+          single_params = ""
+     }
+     single_params
 }
 
