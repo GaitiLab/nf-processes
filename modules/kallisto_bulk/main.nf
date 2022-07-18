@@ -2,7 +2,7 @@
 
 nextflow.enable.dsl=2
 
-include { addRecursiveSearch } from "../../utils/utils.nf"
+include { addRecursiveSearch; setSingleforKallisto; addKallistoSingleParams } from "../../utils/utils.nf"
 
 
 process kallisto_quant {
@@ -14,6 +14,8 @@ process kallisto_quant {
      input:
      tuple val(name), path(reads)
      path transcriptome_index
+     val single_reads
+     val single_read_params
 
      output: 
      path "abundance.h5", emit: cell_gene_matrix
@@ -23,7 +25,7 @@ process kallisto_quant {
 
      script: 
      """
-     kallisto quant -i ${transcriptome_index} -o . ${reads} 
+     kallisto quant -i ${transcriptome_index} -o . ${single_reads} ${single_read_params} ${reads} 
      """
 
 }
@@ -36,7 +38,8 @@ workflow kallisto_qulk {
        fastqs = Channel.fromFilePairs( params.input_dir + '/' + addRecursiveSearch(params.recursive_search) + params.fastq_pattern )
        .ifEmpty { exit 1, "Cannot find any reads matching: ${params.input_dir} with recursive set to: ${params.recursive_search}\n" }
 
-       kallisto_quant(fastqs, params.transcriptome_index)
+       kallisto_quant(fastqs, params.transcriptome_index, setSingleforKallisto(params.single_read), addKallistoSingleParams(
+          params.single_read, params.fragment_length, params.fragment_deviation))
 }
 
 
