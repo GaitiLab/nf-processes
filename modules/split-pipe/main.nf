@@ -35,7 +35,7 @@ process splitpipe_all {
 
        input: 
        tuple val(sublibrary), path(read_1), path(read_2)
-       val kit
+       val chemistry
        val reference
        path sample_list
        path output_dir
@@ -47,7 +47,7 @@ process splitpipe_all {
        script:
        """ 
        split-pipe --mode all \
-       --kit ${kit} \
+       --chemistry ${chemistry} \
        --genome_dir ${reference} \
        --fq1 ${read_1} \
        --fq2 ${read_2} \
@@ -99,7 +99,7 @@ workflow pb_splitpipe {
        }
        
        merge_fastqs(params.input_dir, params.output_dir, samples_sublibraries)
-       splitpipe_all(merge_fastqs.out.sublibrary_read_pairs, params.kit, params.ref, params.sample_list, params.output_dir)
+       splitpipe_all(merge_fastqs.out.sublibrary_read_pairs, params.chemistry, params.ref, params.sample_list, params.output_dir)
 
        fastqs_out = merge_fastqs.out.sublibrary_read_pairs
        
@@ -108,7 +108,7 @@ workflow pb_splitpipe {
        samples_sublibraries = Channel.fromFilePairs( params.input_dir + '/' + addRecursiveSearch(params.recursive_search) + params.fastq_pattern, flat: true )
        .ifEmpty { exit 1, "Cannot find any reads matching: ${params.input_dir} with recursive set to: ${params.recursive_search}\n" }
        
-       splitpipe_all(samples_sublibraries, params.kit, params.ref, params.sample_list, params.output_dir)
+       splitpipe_all(samples_sublibraries, params.chemistry, params.ref, params.sample_list, params.output_dir)
 
        fastqs_out = samples_sublibraries
 
